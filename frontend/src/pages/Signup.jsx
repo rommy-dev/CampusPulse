@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import AuthCard from '../components/AuthCard'
 
@@ -8,7 +8,7 @@ function Signup() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
+  const navigate = useNavigate()
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -28,19 +28,9 @@ function Signup() {
       return
     }
 
-    setSuccess(true)
-  }
-
-  if (success) {
-    return (
-      <AuthCard title="Vérifie ta boîte mail">
-        <p className="text-sm text-text-secondary">
-          Un email de confirmation a été envoyé à <span className="text-text-primary">{email}</span>.
-          Clique sur le lien pour activer ton compte, puis reviens te connecter.
-        </p>
-        <Link to="/login" className="block mt-4 text-sm text-primary">Retour à la connexion</Link>
-      </AuthCard>
-    )
+    // Confirmation email désactivée côté Supabase : signUp() retourne
+    // directement une session valide, l'utilisateur est déjà connecté.
+    navigate('/')
   }
 
   return (
