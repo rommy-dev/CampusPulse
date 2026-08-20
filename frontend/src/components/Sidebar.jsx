@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { LayoutDashboard, FileText, User } from 'lucide-react'
+import Logo from './Logo'
 
 function Sidebar({ userRole }) {
   const location = useLocation()
@@ -7,7 +8,11 @@ function Sidebar({ userRole }) {
   const isActive = (path) => location.pathname === path
 
   return (
-    <aside className="hidden md:flex w-64 bg-surface border-r border-gray-200 dark:border-gray-700 min-h-screen p-4">
+    <aside className="hidden md:flex md:flex-col w-64 bg-surface border-r border-gray-200 dark:border-gray-700 min-h-screen p-4">
+      <div className="flex items-center gap-3 mb-6">
+        <Logo size="default" />
+        <span className="text-xl font-bold text-primary">CampusPulse</span>
+      </div>
       <nav className="space-y-1 w-full">
         <Link 
           to="/dashboard" 

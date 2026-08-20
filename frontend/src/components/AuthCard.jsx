@@ -1,11 +1,11 @@
+import Logo from './Logo'
+
 function AuthCard({ title, children, footer }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-bg px-4 py-8">
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-2 justify-center mb-6 md:mb-8">
-          <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-primary flex items-center justify-center">
-            <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-l-2 border-b-2 border-white rotate-45" />
-          </div>
+          <Logo size="large" />
           <span className="text-base md:text-lg font-medium text-text-primary">CampusPulse</span>
         </div>
 

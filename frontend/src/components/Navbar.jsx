@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabaseClient'
 import { User as UserIcon, LogOut, Sun, Moon } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
+import Logo from './Logo'
 
 function Navbar({ user, onLogout }) {
   const { theme, toggleTheme } = useTheme()
@@ -9,10 +10,15 @@ function Navbar({ user, onLogout }) {
     <header className="bg-surface border-b border-gray-200 dark:border-gray-700 px-4 md:px-6 py-3 md:py-4">
       <div className="flex items-center">
         <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2 text-xs md:text-sm text-text-secondary">
-            <UserIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">Connecté en tant que <span className="font-semibold text-text-primary">{user?.email}</span></span>
-            <span className="sm:hidden font-semibold text-text-primary">{user?.email}</span>
+          <div className="flex items-center gap-2">
+            <div className="sm:hidden">
+              <Logo size="small" />
+            </div>
+            <div className="flex items-center gap-2 text-xs md:text-sm text-text-secondary">
+              <UserIcon className="w-4 h-4 hidden sm:block" />
+              <span className="hidden sm:inline">Connecté en tant que <span className="font-semibold text-text-primary">{user?.email}</span></span>
+              <span className="sm:hidden font-semibold text-text-primary">{user?.email?.split('@')[0]}</span>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button 
