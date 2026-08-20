@@ -69,7 +69,7 @@ function Profil() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-2 md:px-0">
+    <div className="max-w-4xl mx-auto px-2 md:px-0 mb-20 md:mb-6">
       <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
         <User className="w-6 h-6 md:w-8 md:h-8 text-primary" />
         <h1 className="text-2xl md:text-3xl font-bold text-text-primary">Profil</h1>
