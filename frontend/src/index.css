@@ -9,6 +9,34 @@
   --color-text-secondary: #64748B;
   --color-danger: #EF4444;
   --color-warning: #F59E0B;
+  
+  /* Animation tokens */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+}
+
+/* Button press feedback */
+.btn-press {
+  transition: transform 100ms var(--ease-out);
+}
+
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* Link hover feedback */
+.link-hover {
+  transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+
+/* Button hover feedback */
+.btn-hover {
+  transition: background-color var(--duration-fast) var(--ease-out);
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -27,4 +55,13 @@
 body {
   background-color: var(--color-bg);
   color: var(--color-text-primary);
+}
+
+/* Safe area support for mobile devices */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0);
 }

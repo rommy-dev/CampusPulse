@@ -26,6 +26,7 @@ pnpm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+.devin
 
 # Supabase CLI (local dev, genere automatiquement)
 supabase/.branches

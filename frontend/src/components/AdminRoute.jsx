@@ -2,18 +2,30 @@ import { useState, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 
-function ProtectedRoute({ children }) {
-  const [session, setSession] = useState(null)
+function AdminRoute({ children }) {
+  const [userRole, setUserRole] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const checkSession = async () => {
+    const checkUserRole = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      setSession(session)
+      
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single()
+        
+        setUserRole(profile?.role || 'etudiant')
+      } else {
+        setUserRole('etudiant')
+      }
+      
       setLoading(false)
     }
     
-    checkSession()
+    checkUserRole()
   }, [])
 
   if (loading) {
@@ -25,11 +37,11 @@ function ProtectedRoute({ children }) {
     </div>
   }
   
-  if (!session) {
-    return <Navigate to="/login" replace />
+  if (userRole !== 'admin') {
+    return <Navigate to="/formulaire" replace />
   }
   
   return children
 }
 
-export default ProtectedRoute
+export default AdminRoute

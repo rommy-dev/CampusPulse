@@ -6,7 +6,11 @@ import Signup from './pages/Signup'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 import Dashboard from './pages/Dashboard'
+import Formulaire from './pages/Formulaire'
+import Profil from './pages/Profil'
+import Layout from './components/Layout'
 
 function App() {
   const [sessionChecked, setSessionChecked] = useState(false)
@@ -29,9 +33,18 @@ function App() {
     <Routes>
       <Route path="/" element={
         <ProtectedRoute>
-          <Dashboard />
+          <Layout />
         </ProtectedRoute>
-      } />
+      }>
+        <Route index element={<Navigate to="/formulaire" replace />} />
+        <Route path="dashboard" element={
+          <AdminRoute>
+            <Dashboard />
+          </AdminRoute>
+        } />
+        <Route path="formulaire" element={<Formulaire />} />
+        <Route path="profil" element={<Profil />} />
+      </Route>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
