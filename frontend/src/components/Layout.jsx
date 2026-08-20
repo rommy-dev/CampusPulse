@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Navbar from './Navbar'
 import NavBottom from './NavBottom'
@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react'
 function Layout() {
   const [user, setUser] = useState(null)
   const [userRole, setUserRole] = useState('etudiant')
+  const navigate = useNavigate()
 
   useEffect(() => {
     const getUserData = async () => {
@@ -32,8 +33,14 @@ function Layout() {
   }, [])
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/login'
+    const { error } = await supabase.auth.signOut()
+
+    if (error) {
+      console.error('Erreur lors de la déconnexion:', error)
+      return
+    }
+
+    navigate('/login', { replace: true })
   }
 
   return (
