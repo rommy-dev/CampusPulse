@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, FileText, User, LogOut } from 'lucide-react'
+import { LayoutDashboard, FileText, User, Users, LogOut } from 'lucide-react'
 
 function NavBottom({ userRole, onLogout }) {
   const location = useLocation()
@@ -15,6 +15,13 @@ function NavBottom({ userRole, onLogout }) {
         >
           <LayoutDashboard className="w-5 h-5" />
           <span className="text-[10px] font-medium">Dashboard</span>
+        </Link>
+        <Link 
+          to="/utilisateurs" 
+          className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-text-primary min-w-16 ${userRole !== 'admin' ? 'hidden' : ''} ${isActive('/utilisateurs') ? 'text-primary' : 'text-text-secondary'}`}
+        >
+          <Users className="w-5 h-5" />
+          <span className="text-[10px] font-medium">Utilisateurs</span>
         </Link>
         <Link 
           to="/formulaire" 

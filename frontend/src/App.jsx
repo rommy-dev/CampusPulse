@@ -10,6 +10,7 @@ import AdminRoute from './components/AdminRoute'
 import Dashboard from './pages/Dashboard'
 import Formulaire from './pages/Formulaire'
 import Profil from './pages/Profil'
+import Users from './pages/Users'
 import Layout from './components/Layout'
 
 function App() {
@@ -40,6 +41,11 @@ function App() {
         <Route path="dashboard" element={
           <AdminRoute>
             <Dashboard />
+          </AdminRoute>
+        } />
+        <Route path="utilisateurs" element={
+          <AdminRoute>
+            <Users />
           </AdminRoute>
         } />
         <Route path="formulaire" element={<Formulaire />} />
