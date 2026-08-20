@@ -14,6 +14,7 @@ function Profil() {
     nom: '',
     prenom: '',
     date_naissance: '',
+    genre: '',
     filiere: '',
     annee_universitaire: '',
   })
@@ -27,6 +28,7 @@ function Profil() {
         nom: profile.nom || '',
         prenom: profile.prenom || '',
         date_naissance: profile.date_naissance || '',
+        genre: profile.genre || '',
         filiere: profile.filiere || '',
         annee_universitaire: profile.annee_universitaire || '',
       })
@@ -121,6 +123,19 @@ function Profil() {
               onChange={(e) => handleChange('date_naissance', e.target.value)}
               className="w-full rounded-lg border border-text-secondary/20 bg-transparent px-3 py-2 text-text-primary outline-none focus:border-primary"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm text-text-secondary mb-1">Genre</label>
+            <select
+              value={form.genre}
+              onChange={(e) => handleChange('genre', e.target.value)}
+              className="w-full rounded-lg border border-text-secondary/20 bg-transparent px-3 py-2 text-text-primary outline-none focus:border-primary"
+            >
+              <option value="">Sélectionner...</option>
+              <option value="Masculin">Masculin</option>
+              <option value="Féminin">Féminin</option>
+            </select>
           </div>
 
           <div>
