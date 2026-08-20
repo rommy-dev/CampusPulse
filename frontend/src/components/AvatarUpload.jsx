@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { User } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import Badge from './Badge'
 
 function AvatarUpload({ userId, avatarUrl, onUploaded }) {
   const [uploading, setUploading] = useState(false)
@@ -86,7 +87,7 @@ function AvatarUpload({ userId, avatarUrl, onUploaded }) {
         {uploading ? 'Envoi...' : 'Changer la photo'}
       </button>
 
-      {error && <p className="text-xs text-danger">{error}</p>}
+      {error && <Badge type="error" message={error} className="text-xs" />}
     </div>
   )
 }

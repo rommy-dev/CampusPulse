@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabaseClient'
 import { useProfile } from '../hooks/useProfile'
 import { FILIERES, ANNEES_UNIVERSITAIRES } from '../constants/filieres'
 import AvatarUpload from '../components/AvatarUpload'
+import LoadingSpinner from '../components/LoadingSpinner'
+import Badge from '../components/Badge'
 
 function Profil() {
   const { profile, user, loading, refetch } = useProfile()
@@ -59,7 +61,7 @@ function Profil() {
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-2 md:px-0">
-        <p className="text-text-secondary text-sm">Chargement...</p>
+        <LoadingSpinner />
       </div>
     )
   }
@@ -153,8 +155,8 @@ function Profil() {
             </select>
           </div>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
-          {success && <p className="text-sm text-secondary">Profil mis à jour.</p>}
+          {error && <Badge type="error" message={error} />}
+          {success && <Badge type="success" message="Profil mis à jour." />}
 
           <div className="flex justify-center">
             <button

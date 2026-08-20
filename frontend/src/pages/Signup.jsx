@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import AuthCard from '../components/AuthCard'
+import Badge from '../components/Badge'
 
 function Signup() {
   const [email, setEmail] = useState('')
@@ -66,7 +67,7 @@ function Signup() {
           />
         </div>
 
-        {error && <p className="text-sm text-danger">{error}</p>}
+        {error && <Badge type="error" message={error} />}
 
         <button
           type="submit"
