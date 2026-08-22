@@ -31,14 +31,29 @@ function Formulaire() {
 
   const [formData, setFormData] = useState({
     // Étape 1: Logement & Transport
-    logement: '',
-    autre_logement: '',
+    habite_cur_vontovorona: false,
+    type_logement_cur: '',
+    nombre_coloc: '',
+    type_location: '',
+    nombre_personnes_location: '',
+    region: '',
+    district: '',
+    commune: '',
+    ville: '',
+    quartier: '',
+    venant_antananarivo: false,
+    famille_antananarivo: false,
+    habite_chez_famille_ville: false,
+    famille_district: '',
+    famille_commune: '',
+    famille_ville: '',
+    famille_quartier: '',
     transport: [],
     autre_transport: '',
-    frequence_venue: '',
-    frequence_depart: '',
-    domicialisation_ville: '',
-    domicialisation_distance_vontovorona: '',
+    jours_cur_semaine: '',
+    jours_maison_semaine: '',
+    allers_retours_semaine: '',
+    frequence_retour_origine: '',
 
     // Étape 2: Alimentation
     repas: {
@@ -118,14 +133,63 @@ function Formulaire() {
     const stepsWithErrors = new Set()
 
     // Étape 1: Logement & Transport
-    if (!formData.logement) {
-      errors.logement = 'Ce champ est obligatoire'
+    // Logement
+    if (formData.habite_cur_vontovorona && !formData.type_logement_cur) {
+      errors.type_logement_cur = 'Ce champ est obligatoire'
       stepsWithErrors.add(1)
     }
-    if (formData.logement === 'autre' && !formData.autre_logement) {
-      errors.autre_logement = 'Veuillez préciser'
+    if (formData.habite_cur_vontovorona && formData.type_logement_cur === 'colocation' && (formData.nombre_coloc === '' || formData.nombre_coloc < 0)) {
+      errors.nombre_coloc = 'Veuillez entrer un nombre positif'
       stepsWithErrors.add(1)
     }
+    if (formData.habite_cur_vontovorona && formData.type_logement_cur === 'location' && !formData.type_location) {
+      errors.type_location = 'Ce champ est obligatoire'
+      stepsWithErrors.add(1)
+    }
+    if (formData.habite_cur_vontovorona && formData.type_logement_cur === 'location' && formData.type_location === 'plusieurs' && (formData.nombre_personnes_location === '' || formData.nombre_personnes_location < 0)) {
+      errors.nombre_personnes_location = 'Veuillez entrer un nombre positif'
+      stepsWithErrors.add(1)
+    }
+
+    // Origine
+    if (!formData.region) {
+      errors.region = 'Ce champ est obligatoire'
+      stepsWithErrors.add(1)
+    }
+    if (!formData.district) {
+      errors.district = 'Ce champ est obligatoire'
+      stepsWithErrors.add(1)
+    }
+    if (!formData.commune) {
+      errors.commune = 'Ce champ est obligatoire'
+      stepsWithErrors.add(1)
+    }
+    if (!formData.ville) {
+      errors.ville = 'Ce champ est obligatoire'
+      stepsWithErrors.add(1)
+    }
+    if (!formData.quartier) {
+      errors.quartier = 'Ce champ est obligatoire'
+      stepsWithErrors.add(1)
+    }
+    if (formData.venant_antananarivo === undefined) {
+      errors.venant_antananarivo = 'Ce champ est obligatoire'
+      stepsWithErrors.add(1)
+    }
+    if (formData.venant_antananarivo === false && formData.famille_antananarivo === undefined) {
+      errors.famille_antananarivo = 'Ce champ est obligatoire'
+      stepsWithErrors.add(1)
+    }
+    if (formData.venant_antananarivo === false && formData.famille_antananarivo === true && formData.habite_chez_famille_ville === undefined) {
+      errors.habite_chez_famille_ville = 'Ce champ est obligatoire'
+      stepsWithErrors.add(1)
+    }
+    if (formData.venant_antananarivo === false && formData.famille_antananarivo === true && formData.habite_chez_famille_ville === true && !formData.famille_quartier) {
+      errors.famille_habite = 'Veuillez remplir les informations sur le lieu de résidence de votre famille'
+      stepsWithErrors.add(1)
+    }
+
+    // Transport
     if (formData.transport.length === 0) {
       errors.transport = 'Ce champ est obligatoire'
       stepsWithErrors.add(1)
@@ -134,20 +198,20 @@ function Formulaire() {
       errors.autre_transport = 'Veuillez préciser'
       stepsWithErrors.add(1)
     }
-    if (formData.frequence_venue === '' || formData.frequence_venue < 0 || formData.frequence_venue > 7) {
-      errors.frequence_venue = 'Veuillez entrer un nombre entre 0 et 7'
+    if (formData.jours_cur_semaine === '' || formData.jours_cur_semaine < 0 || formData.jours_cur_semaine > 7) {
+      errors.jours_cur_semaine = 'Veuillez entrer un nombre entre 0 et 7'
       stepsWithErrors.add(1)
     }
-    if (formData.frequence_depart === '' || formData.frequence_depart < 0) {
-      errors.frequence_depart = 'Veuillez entrer un nombre positif'
+    if (formData.jours_maison_semaine === '' || formData.jours_maison_semaine < 0 || formData.jours_maison_semaine > 7) {
+      errors.jours_maison_semaine = 'Veuillez entrer un nombre entre 0 et 7'
       stepsWithErrors.add(1)
     }
-    if (!formData.domicialisation_ville) {
-      errors.domicialisation_ville = 'Ce champ est obligatoire'
+    if (formData.allers_retours_semaine === '' || formData.allers_retours_semaine < 0) {
+      errors.allers_retours_semaine = 'Veuillez entrer un nombre positif'
       stepsWithErrors.add(1)
     }
-    if (formData.domicialisation_distance_vontovorona === '' || formData.domicialisation_distance_vontovorona < 0) {
-      errors.domicialisation_distance_vontovorona = 'Veuillez entrer une distance valide'
+    if (formData.frequence_retour_origine === '' || formData.frequence_retour_origine < 0) {
+      errors.frequence_retour_origine = 'Veuillez entrer un nombre positif'
       stepsWithErrors.add(1)
     }
 
@@ -259,12 +323,36 @@ function Formulaire() {
 
     try {
       const answers = {
-        logement: formData.logement === 'autre' ? formData.autre_logement : formData.logement,
+        habite_cur_vontovorona: formData.habite_cur_vontovorona,
+        ...(formData.habite_cur_vontovorona && {
+          type_logement_cur: formData.type_logement_cur,
+          ...(formData.type_logement_cur === 'colocation' && { nombre_coloc: parseInt(formData.nombre_coloc) }),
+          ...(formData.type_logement_cur === 'location' && {
+            type_location: formData.type_location,
+            ...(formData.type_location === 'plusieurs' && { nombre_personnes_location: parseInt(formData.nombre_personnes_location) })
+          })
+        }),
+        region: formData.region,
+        district: formData.district,
+        commune: formData.commune,
+        ville: formData.ville,
+        quartier: formData.quartier,
+        venant_antananarivo: formData.venant_antananarivo,
+        ...(formData.venant_antananarivo === false && {
+          famille_antananarivo: formData.famille_antananarivo,
+          ...(formData.famille_antananarivo === true && { habite_chez_famille_ville: formData.habite_chez_famille_ville }),
+          ...(formData.famille_antananarivo === true && formData.habite_chez_famille_ville === true && {
+            famille_district: formData.famille_district,
+            famille_commune: formData.famille_commune,
+            famille_ville: formData.famille_ville,
+            famille_quartier: formData.famille_quartier
+          })
+        }),
         transport: formData.transport.map(t => t === 'autre' ? formData.autre_transport : t),
-        frequence_venue: parseInt(formData.frequence_venue),
-        frequence_depart: parseInt(formData.frequence_depart),
-        domicialisation_ville: formData.domicialisation_ville,
-        domicialisation_distance_vontovorona: parseFloat(formData.domicialisation_distance_vontovorona),
+        jours_cur_semaine: parseInt(formData.jours_cur_semaine),
+        jours_maison_semaine: parseInt(formData.jours_maison_semaine),
+        allers_retours_semaine: parseInt(formData.allers_retours_semaine),
+        frequence_retour_origine: parseInt(formData.frequence_retour_origine),
         repas: formData.repas,
         gouters: formData.gouters.map(g => g === 'autre' ? formData.autre_gouters : g),
         cafe_boit: formData.cafe_boit,
