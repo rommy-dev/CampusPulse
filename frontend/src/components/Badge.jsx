@@ -20,7 +20,7 @@ function Badge({ type = 'info', message, onDismiss, className = '' }) {
   const Icon = icons[type] || icons.info
 
   return (
-    <div className={`${baseStyles} ${typeStyles[type]} ${className}`} role="alert">
+    <div className={`${baseStyles} ${typeStyles[type]} ${className} my-2`} role="alert">
       <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
       <span className="flex-1">{message}</span>
       {onDismiss && (
