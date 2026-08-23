@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, FileText, Users, TrendingUp } from 'lucide-react'
+import { LayoutDashboard, FileText, Users, TrendingUp, BarChart3 } from 'lucide-react'
 
 function NavBottom({ userRole }) {
   const location = useLocation()
@@ -22,6 +22,13 @@ function NavBottom({ userRole }) {
         >
           <Users className="w-5 h-5" />
           <span className="text-[10px] font-medium">Utilisateurs</span>
+        </Link>
+        <Link 
+          to="/resultat" 
+          className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-text-primary min-w-16 ${userRole !== 'admin' ? 'hidden' : ''} ${isActive('/resultat') ? 'bg-primary text-white' : 'text-text-secondary'}`}
+        >
+          <BarChart3 className="w-5 h-5" />
+          <span className="text-[10px] font-medium">Résultat</span>
         </Link>
         <Link 
           to="/statistiques" 

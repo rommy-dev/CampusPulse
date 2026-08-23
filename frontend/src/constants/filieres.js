@@ -6,7 +6,7 @@ export const FILIERES = [
       'GMI - Génie Mécanique et Industriel',
       'GE - Génie Électrique',
       'SIM - Sciences et Ingénieries des Matériaux',
-      'GER - Génie Rural',
+      'GPAE - Génie Pharmaceutique Alimentaire et Environnemental',
     ],
   },
   {

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, FileText, User, Users, TrendingUp } from 'lucide-react'
+import { LayoutDashboard, FileText, User, Users, TrendingUp, BarChart3 } from 'lucide-react'
 import Logo from './Logo'
 
 function Sidebar({ userRole }) {
@@ -29,6 +29,13 @@ function Sidebar({ userRole }) {
           >
             <Users className="w-5 h-5" />
             <span className="font-medium">Utilisateurs</span>
+          </Link>
+          <Link 
+            to="/resultat" 
+            className={`link-hover flex items-center gap-3 px-4 py-3 rounded-lg text-text-primary ${userRole !== 'admin' ? 'hidden' : ''} ${isActive('/resultat') ? 'bg-primary text-white' : 'hover:bg-bg'}`}
+          >
+            <BarChart3 className="w-5 h-5" />
+            <span className="font-medium">Résultat</span>
           </Link>
           <Link 
             to="/statistiques" 

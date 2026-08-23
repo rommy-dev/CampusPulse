@@ -10,6 +10,7 @@ import AdminRoute from './components/AdminRoute'
 import Dashboard from './pages/Dashboard'
 import Formulaire from './pages/Formulaire'
 import Statistiques from './pages/Statistiques'
+import Resultat from './pages/Resultat'
 import Profil from './pages/Profil'
 import Users from './pages/Users'
 import Layout from './components/Layout'
@@ -50,6 +51,11 @@ function App() {
           </AdminRoute>
         } />
         <Route path="formulaire" element={<Formulaire />} />
+        <Route path="resultat" element={
+          <AdminRoute>
+            <Resultat />
+          </AdminRoute>
+        } />
         <Route path="statistiques" element={
           <AdminRoute>
             <Statistiques />
