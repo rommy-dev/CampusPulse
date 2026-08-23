@@ -125,13 +125,20 @@ function Formulaire() {
     },
 
     // Étape 3: Hygiène & Vêtements
-    douche_quotidienne: false,
-    douche_frequence: '',
-    eau_bouillir: false,
-    vetements_semaine: '',
-    vetements_laver_repasser: '',
+    type_hygiene: '',
+    hygiene_frequence_jour: '',
+    hygiene_frequence_semaine: '',
+    lave_cheveux: false,
+    lave_cheveux_frequence_semaine: '',
+    lave_cheveux_produit: '',
+    lessive_methode: '',
+    lessive_frequence_semaine: '',
+    lessive_nombre_tenues: '',
+    type_vetements: [],
+    qualite_vetements: [],
+    repassage_frequence_semaine: '',
     brushing_utilise: false,
-    lissage_utilise: false,
+    lisseur_utilise: false,
 
     // Étape 4: Technologie
     telephone_marque: '',
@@ -323,16 +330,42 @@ function Formulaire() {
     }
 
     // Étape 3: Hygiène & Vêtements
-    if (formData.douche_quotidienne && (formData.douche_frequence === '' || formData.douche_frequence < 0)) {
-      errors.douche_frequence = 'Veuillez entrer un nombre positif'
+    if (!formData.type_hygiene) {
+      errors.type_hygiene = 'Ce champ est obligatoire'
       stepsWithErrors.add(3)
     }
-    if (formData.vetements_semaine === '' || formData.vetements_semaine < 0) {
-      errors.vetements_semaine = 'Veuillez entrer un nombre positif'
+    if (formData.hygiene_frequence_jour === '' || formData.hygiene_frequence_jour < 0) {
+      errors.hygiene_frequence_jour = 'Veuillez entrer un nombre positif'
       stepsWithErrors.add(3)
     }
-    if (formData.vetements_laver_repasser === '' || formData.vetements_laver_repasser < 0) {
-      errors.vetements_laver_repasser = 'Veuillez entrer un nombre positif'
+    if (formData.hygiene_frequence_semaine === '' || formData.hygiene_frequence_semaine < 0) {
+      errors.hygiene_frequence_semaine = 'Veuillez entrer un nombre positif'
+      stepsWithErrors.add(3)
+    }
+    if (formData.lave_cheveux) {
+      if (formData.lave_cheveux_frequence_semaine === '' || formData.lave_cheveux_frequence_semaine < 0) {
+        errors.lave_cheveux_frequence_semaine = 'Veuillez entrer un nombre positif'
+        stepsWithErrors.add(3)
+      }
+      if (!formData.lave_cheveux_produit) {
+        errors.lave_cheveux_produit = 'Ce champ est obligatoire'
+        stepsWithErrors.add(3)
+      }
+    }
+    if (!formData.lessive_methode) {
+      errors.lessive_methode = 'Ce champ est obligatoire'
+      stepsWithErrors.add(3)
+    }
+    if (formData.lessive_frequence_semaine === '' || formData.lessive_frequence_semaine < 0) {
+      errors.lessive_frequence_semaine = 'Veuillez entrer un nombre positif'
+      stepsWithErrors.add(3)
+    }
+    if (formData.lessive_nombre_tenues !== '' && formData.lessive_nombre_tenues < 0) {
+      errors.lessive_nombre_tenues = 'Veuillez entrer un nombre positif'
+      stepsWithErrors.add(3)
+    }
+    if (formData.repassage_frequence_semaine !== '' && formData.repassage_frequence_semaine < 0) {
+      errors.repassage_frequence_semaine = 'Veuillez entrer un nombre positif'
       stepsWithErrors.add(3)
     }
 
@@ -471,13 +504,22 @@ function Formulaire() {
             ])
           )
         } : null,
-        douche_quotidienne: formData.douche_quotidienne,
-        ...(formData.douche_quotidienne && { douche_frequence: parseInt(formData.douche_frequence) }),
-        eau_bouillir: formData.eau_bouillir,
-        vetements_semaine: parseInt(formData.vetements_semaine),
-        vetements_laver_repasser: parseInt(formData.vetements_laver_repasser),
+        type_hygiene: formData.type_hygiene,
+        hygiene_frequence_jour: parseInt(formData.hygiene_frequence_jour),
+        hygiene_frequence_semaine: parseInt(formData.hygiene_frequence_semaine),
+        lave_cheveux: formData.lave_cheveux,
+        ...(formData.lave_cheveux && {
+          lave_cheveux_frequence_semaine: parseInt(formData.lave_cheveux_frequence_semaine),
+          lave_cheveux_produit: formData.lave_cheveux_produit
+        }),
+        lessive_methode: formData.lessive_methode,
+        lessive_frequence_semaine: parseInt(formData.lessive_frequence_semaine),
+        ...(formData.lessive_nombre_tenues !== '' && { lessive_nombre_tenues: parseInt(formData.lessive_nombre_tenues) }),
+        type_vetements: formData.type_vetements,
+        qualite_vetements: formData.qualite_vetements,
+        ...(formData.repassage_frequence_semaine !== '' && { repassage_frequence_semaine: parseInt(formData.repassage_frequence_semaine) }),
         brushing_utilise: formData.brushing_utilise,
-        lissage_utilise: formData.lissage_utilise,
+        lisseur_utilise: formData.lisseur_utilise,
         telephone_marque: formData.telephone_marque,
         recharge_telephone_jour: parseInt(formData.recharge_telephone_jour),
         ecrans_tel_heures_jour: parseFloat(formData.ecrans_tel_heures_jour),
