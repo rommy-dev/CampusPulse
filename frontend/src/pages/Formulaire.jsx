@@ -58,6 +58,10 @@ function Formulaire() {
     // Étape 2: Alimentation
     alimentation: {
       saute_repas: false,
+      moyen_cuisson: [],
+      cuisson_heures_jour: '',
+      cuisson_fois_jour: '',
+      cuisson_autre_precision: '',
       petit_dejeuner: {
         mode: [],
         aliments: {
@@ -282,6 +286,30 @@ function Formulaire() {
       errors.alimentation = 'Veuillez remplir les informations alimentaires'
       stepsWithErrors.add(2)
     } else {
+      // Validate cooking method
+      if (!formData.alimentation.moyen_cuisson || formData.alimentation.moyen_cuisson.length === 0) {
+        errors.moyen_cuisson = 'Veuillez sélectionner au moins un moyen de cuisson'
+        stepsWithErrors.add(2)
+      }
+
+      // Validate conditional cooking fields
+      const hasGazOrResistance = formData.alimentation.moyen_cuisson?.includes('gaz') || formData.alimentation.moyen_cuisson?.includes('resistance')
+      if (hasGazOrResistance && (formData.alimentation.cuisson_heures_jour === '' || formData.alimentation.cuisson_heures_jour < 0)) {
+        errors.cuisson_heures_jour = 'Veuillez entrer un nombre positif'
+        stepsWithErrors.add(2)
+      }
+
+      const hasCharbonOrBois = formData.alimentation.moyen_cuisson?.includes('charbon') || formData.alimentation.moyen_cuisson?.includes('bois')
+      if (hasCharbonOrBois && (formData.alimentation.cuisson_fois_jour === '' || formData.alimentation.cuisson_fois_jour < 0)) {
+        errors.cuisson_fois_jour = 'Veuillez entrer un nombre positif'
+        stepsWithErrors.add(2)
+      }
+
+      if (formData.alimentation.moyen_cuisson?.includes('autre') && !formData.alimentation.cuisson_autre_precision) {
+        errors.cuisson_autre_precision = 'Veuillez préciser le moyen de cuisson'
+        stepsWithErrors.add(2)
+      }
+
       // Validate at least one meal has mode selected
       const hasMealMode = ['petit_dejeuner', 'dejeuner', 'diner', 'gouter'].some(
         meal => formData.alimentation[meal]?.mode && formData.alimentation[meal].mode.length > 0
@@ -482,20 +510,24 @@ function Formulaire() {
         frequence_retour_origine: parseInt(formData.frequence_retour_origine),
         alimentation: formData.alimentation ? {
           ...formData.alimentation,
+          moyen_cuisson: formData.alimentation.moyen_cuisson,
+          ...(formData.alimentation.cuisson_heures_jour !== '' && { cuisson_heures_jour: parseFloat(formData.alimentation.cuisson_heures_jour) }),
+          ...(formData.alimentation.cuisson_fois_jour !== '' && { cuisson_fois_jour: parseInt(formData.alimentation.cuisson_fois_jour) }),
+          ...(formData.alimentation.cuisson_autre_precision && { cuisson_autre_precision: formData.alimentation.cuisson_autre_precision }),
           // Convert numeric fields
           petit_dejeuner: {
             ...formData.alimentation.petit_dejeuner,
-            riz_frequence_jour: formData.alimentation.petit_dejeuner?.riz_frequence_jour ? 
+            riz_frequence_jour: formData.alimentation.petit_dejeuner?.riz_frequence_jour ?
               parseInt(formData.alimentation.petit_dejeuner.riz_frequence_jour) : null
           },
           dejeuner: {
             ...formData.alimentation.dejeuner,
-            riz_frequence_jour: formData.alimentation.dejeuner?.riz_frequence_jour ? 
+            riz_frequence_jour: formData.alimentation.dejeuner?.riz_frequence_jour ?
               parseInt(formData.alimentation.dejeuner.riz_frequence_jour) : null
           },
           diner: {
             ...formData.alimentation.diner,
-            riz_frequence_jour: formData.alimentation.diner?.riz_frequence_jour ? 
+            riz_frequence_jour: formData.alimentation.diner?.riz_frequence_jour ?
               parseInt(formData.alimentation.diner.riz_frequence_jour) : null
           },
           boissons: Object.fromEntries(

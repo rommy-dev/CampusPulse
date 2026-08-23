@@ -126,6 +126,14 @@ function Alimentation({ formData, setFormData, validationErrors, setValidationEr
     { value: 'mange_exterieur', label: 'Je mange à l\'extérieur' }
   ]
 
+  const moyenCuissonOptions = [
+    { value: 'gaz', label: 'Gaz' },
+    { value: 'charbon', label: 'Charbon' },
+    { value: 'resistance', label: 'Résistance électrique' },
+    { value: 'bois', label: 'Bois' },
+    { value: 'autre', label: 'Autre' }
+  ]
+
   // Initialize alimentation structure if not exists
   useEffect(() => {
     if (!formData.alimentation) {
@@ -133,6 +141,10 @@ function Alimentation({ formData, setFormData, validationErrors, setValidationEr
         ...prev,
         alimentation: {
           saute_repas: false,
+          moyen_cuisson: [],
+          cuisson_heures_jour: '',
+          cuisson_fois_jour: '',
+          cuisson_autre_precision: '',
           petit_dejeuner: {
             mode: [],
             aliments: {
@@ -415,6 +427,72 @@ function Alimentation({ formData, setFormData, validationErrors, setValidationEr
     }
   }
 
+  const handleMoyenCuissonChange = (value) => {
+    setFormData(prev => {
+      const alimentation = { ...prev.alimentation }
+      const currentMeans = [...alimentation.moyen_cuisson]
+
+      if (currentMeans.includes(value)) {
+        alimentation.moyen_cuisson = currentMeans.filter(m => m !== value)
+      } else {
+        alimentation.moyen_cuisson = [...currentMeans, value]
+      }
+
+      // Clean up conditional fields when deselecting
+      if (!alimentation.moyen_cuisson.includes('gaz') && !alimentation.moyen_cuisson.includes('resistance')) {
+        alimentation.cuisson_heures_jour = ''
+      }
+      if (!alimentation.moyen_cuisson.includes('charbon') && !alimentation.moyen_cuisson.includes('bois')) {
+        alimentation.cuisson_fois_jour = ''
+      }
+      if (!alimentation.moyen_cuisson.includes('autre')) {
+        alimentation.cuisson_autre_precision = ''
+      }
+
+      return { ...prev, alimentation }
+    })
+
+    if (validationErrors.moyen_cuisson) {
+      setValidationErrors(prev => ({ ...prev, moyen_cuisson: null }))
+    }
+  }
+
+  const handleCuissonHeuresChange = (value) => {
+    setFormData(prev => {
+      const alimentation = { ...prev.alimentation }
+      alimentation.cuisson_heures_jour = value
+      return { ...prev, alimentation }
+    })
+
+    if (validationErrors.cuisson_heures_jour) {
+      setValidationErrors(prev => ({ ...prev, cuisson_heures_jour: null }))
+    }
+  }
+
+  const handleCuissonFoisChange = (value) => {
+    setFormData(prev => {
+      const alimentation = { ...prev.alimentation }
+      alimentation.cuisson_fois_jour = value
+      return { ...prev, alimentation }
+    })
+
+    if (validationErrors.cuisson_fois_jour) {
+      setValidationErrors(prev => ({ ...prev, cuisson_fois_jour: null }))
+    }
+  }
+
+  const handleCuissonAutreChange = (value) => {
+    setFormData(prev => {
+      const alimentation = { ...prev.alimentation }
+      alimentation.cuisson_autre_precision = value
+      return { ...prev, alimentation }
+    })
+
+    if (validationErrors.cuisson_autre_precision) {
+      setValidationErrors(prev => ({ ...prev, cuisson_autre_precision: null }))
+    }
+  }
+
   // Helper to check if rice frequency should be shown
   const shouldShowRizFrequence = (repasKey) => {
     const repas = formData.alimentation[repasKey]
@@ -528,6 +606,78 @@ function Alimentation({ formData, setFormData, validationErrors, setValidationEr
           />
           <span className="text-text-primary font-medium">Je saute parfois des repas</span>
         </label>
+      </div>
+
+      {/* Cooking method */}
+      <div className="bg-surface rounded-lg shadow-sm border border-text-secondary/10 p-4 md:p-6">
+        <h2 className="text-lg font-semibold text-text-primary mb-4">Méthode de cuisson</h2>
+        <p className="text-text-secondary text-sm mb-4">Quel(s) moyen(s) de cuisson utilisez-vous ?</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {moyenCuissonOptions.map(option => (
+            <label key={option.value} className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.alimentation.moyen_cuisson?.includes(option.value)}
+                onChange={() => handleMoyenCuissonChange(option.value)}
+                className="w-4 h-4 text-primary"
+              />
+              <span className="text-text-primary">{option.label}</span>
+            </label>
+          ))}
+        </div>
+        {validationErrors.moyen_cuisson && <p className="text-danger text-sm mt-2">{validationErrors.moyen_cuisson}</p>}
+
+        {/* Conditional fields based on cooking method */}
+        {(formData.alimentation.moyen_cuisson?.includes('gaz') || formData.alimentation.moyen_cuisson?.includes('resistance')) && (
+          <div className="mt-4">
+            <label className="block text-text-secondary text-sm mb-2">
+              Combien d'heures par jour utilisez-vous ce moyen de cuisson ?
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="0.5"
+              value={formData.alimentation.cuisson_heures_jour || ''}
+              onChange={(e) => handleCuissonHeuresChange(e.target.value)}
+              placeholder="Ex: 2"
+              className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            {validationErrors.cuisson_heures_jour && <p className="text-danger text-sm mt-1">{validationErrors.cuisson_heures_jour}</p>}
+          </div>
+        )}
+
+        {(formData.alimentation.moyen_cuisson?.includes('charbon') || formData.alimentation.moyen_cuisson?.includes('bois')) && (
+          <div className="mt-4">
+            <label className="block text-text-secondary text-sm mb-2">
+              Combien de fois par jour utilisez-vous ce moyen de cuisson ?
+            </label>
+            <input
+              type="number"
+              min="0"
+              value={formData.alimentation.cuisson_fois_jour || ''}
+              onChange={(e) => handleCuissonFoisChange(e.target.value)}
+              placeholder="Ex: 3"
+              className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            {validationErrors.cuisson_fois_jour && <p className="text-danger text-sm mt-1">{validationErrors.cuisson_fois_jour}</p>}
+          </div>
+        )}
+
+        {formData.alimentation.moyen_cuisson?.includes('autre') && (
+          <div className="mt-4">
+            <label className="block text-text-secondary text-sm mb-2">
+              Précisez le moyen de cuisson
+            </label>
+            <input
+              type="text"
+              value={formData.alimentation.cuisson_autre_precision || ''}
+              onChange={(e) => handleCuissonAutreChange(e.target.value)}
+              placeholder="Ex: Plaque solaire"
+              className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            {validationErrors.cuisson_autre_precision && <p className="text-danger text-sm mt-1">{validationErrors.cuisson_autre_precision}</p>}
+          </div>
+        )}
       </div>
 
       {/* Petit déjeuner */}
