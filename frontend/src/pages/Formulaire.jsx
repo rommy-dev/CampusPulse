@@ -161,8 +161,12 @@ function Formulaire() {
 
     // Étape 5: Mode de vie
     alcool_boit: false,
-    nuisance_sonore: false,
-    ordures_quantite: ''
+    type_dechet: [],
+    ordures_frequence_semaine: '',
+    elimination_ordures: [],
+    tabac: false,
+    cigarettes: false,
+    produits_stupéfiants_frequence_semaine: ''
   })
 
   useEffect(() => {
@@ -449,8 +453,20 @@ function Formulaire() {
     }
 
     // Étape 5: Mode de vie
-    if (!formData.ordures_quantite) {
-      errors.ordures_quantite = 'Ce champ est obligatoire'
+    if (!formData.type_dechet || formData.type_dechet.length === 0) {
+      errors.type_dechet = 'Veuillez sélectionner au moins un type de déchet'
+      stepsWithErrors.add(5)
+    }
+    if (formData.ordures_frequence_semaine === '' || formData.ordures_frequence_semaine < 0) {
+      errors.ordures_frequence_semaine = 'Veuillez entrer un nombre positif'
+      stepsWithErrors.add(5)
+    }
+    if (!formData.elimination_ordures || formData.elimination_ordures.length === 0) {
+      errors.elimination_ordures = 'Veuillez sélectionner au moins un lieu d\'élimination'
+      stepsWithErrors.add(5)
+    }
+    if ((formData.alcool_boit || formData.tabac || formData.cigarettes) && (formData.produits_stupéfiants_frequence_semaine === '' || formData.produits_stupéfiants_frequence_semaine < 0)) {
+      errors.produits_stupéfiants_frequence_semaine = 'Veuillez entrer un nombre positif'
       stepsWithErrors.add(5)
     }
 
@@ -574,8 +590,12 @@ function Formulaire() {
         }),
         lumiere_heures_jour: parseFloat(formData.lumiere_heures_jour),
         alcool_boit: formData.alcool_boit,
-        nuisance_sonore: formData.nuisance_sonore,
-        ordures_quantite: formData.ordures_quantite
+        type_dechet: formData.type_dechet,
+        ordures_frequence_semaine: parseInt(formData.ordures_frequence_semaine),
+        elimination_ordures: formData.elimination_ordures,
+        tabac: formData.tabac,
+        cigarettes: formData.cigarettes,
+        ...(formData.alcool_boit || formData.tabac || formData.cigarettes ? { produits_stupéfiants_frequence_semaine: parseInt(formData.produits_stupéfiants_frequence_semaine) } : {})
       }
 
       const { error: insertError } = await supabase
