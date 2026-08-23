@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import AuthCard from '../components/AuthCard'
 import Badge from '../components/Badge'
+import ThemeToggle from '../components/ThemeToggle'
 
 function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -31,7 +32,10 @@ function ForgotPassword() {
 
   if (sent) {
     return (
-      <AuthCard title="Email envoyé">
+      <AuthCard 
+        title="Email envoyé"
+        topRightActions={<ThemeToggle />}
+      >
         <Badge type="success" message={`Si un compte existe pour ${email}, un lien de réinitialisation vient d'être envoyé.`} className="mb-4" />
         <Link to="/login" className="block text-sm text-primary">Retour à la connexion</Link>
       </AuthCard>
@@ -39,7 +43,10 @@ function ForgotPassword() {
   }
 
   return (
-    <AuthCard title="Mot de passe oublié">
+    <AuthCard 
+      title="Mot de passe oublié"
+      topRightActions={<ThemeToggle />}
+    >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm text-text-secondary mb-1">Email</label>

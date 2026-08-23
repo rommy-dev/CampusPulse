@@ -1,8 +1,13 @@
 import Logo from './Logo'
 
-function AuthCard({ title, children, footer }) {
+function AuthCard({ title, children, footer, topRightActions }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-bg px-4 py-8 relative">
+      {topRightActions && (
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          {topRightActions}
+        </div>
+      )}
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-2 justify-center mb-6 md:mb-8">
           <Logo size="large" />

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import AuthCard from '../components/AuthCard'
 import Badge from '../components/Badge'
+import ThemeToggle from '../components/ThemeToggle'
 import { FILIERES, ANNEES_UNIVERSITAIRES } from '../constants/filieres'
 
 function Signup() {
@@ -86,6 +87,7 @@ function Signup() {
           <Link to="/login" className="text-primary">Se connecter</Link>
         </>
       }
+      topRightActions={<ThemeToggle />}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

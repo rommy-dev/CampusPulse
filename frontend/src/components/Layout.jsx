@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 
 function Layout() {
   const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
   const [userRole, setUserRole] = useState('etudiant')
   const navigate = useNavigate()
 
@@ -16,15 +17,16 @@ function Layout() {
       if (session?.user) {
         setUser(session.user)
         
-        // Fetch user role from profiles table
-        const { data: profile } = await supabase
+        // Fetch user profile from profiles table
+        const { data: profileData } = await supabase
           .from('profiles')
-          .select('role')
+          .select('*')
           .eq('id', session.user.id)
           .single()
         
-        if (profile) {
-          setUserRole(profile.role)
+        if (profileData) {
+          setProfile(profileData)
+          setUserRole(profileData.role)
         }
       }
     }
@@ -37,7 +39,7 @@ function Layout() {
 
     if (error) {
       console.error('Erreur lors de la déconnexion:', error)
-      return
+      throw error
     }
 
     navigate('/login', { replace: true })
@@ -47,11 +49,11 @@ function Layout() {
     <div className="flex min-h-screen bg-bg min-w-0">
       <Sidebar userRole={userRole} />
       <div className="flex-1 flex flex-col min-w-0">
-        <Navbar user={user} onLogout={handleLogout} />
+        <Navbar user={user} profile={profile} onLogout={handleLogout} />
         <main className="flex-1 min-w-0 p-4 md:p-6 pb-20 md:pb-6">
           <Outlet />
         </main>
-        <NavBottom userRole={userRole} onLogout={handleLogout} />
+        <NavBottom userRole={userRole} />
       </div>
     </div>
   )

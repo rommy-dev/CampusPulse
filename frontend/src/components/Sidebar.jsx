@@ -15,7 +15,7 @@ function Sidebar({ userRole }) {
       </div>
       <nav className="w-full">
         <div className="space-y-1 mb-2">
-          <h2 className="text-xs font-semibold text-text-secondary uppercase tracking-wider px-4 py-2">Administration</h2>
+          <h2 className={`text-xs font-semibold text-text-secondary uppercase tracking-wider px-4 py-2 ${userRole !== 'admin' ? 'hidden' : ''}`}>Administration</h2>
           <Link 
             to="/dashboard" 
             className={`link-hover flex items-center gap-3 px-4 py-3 rounded-lg text-text-primary ${userRole !== 'admin' ? 'hidden' : ''} ${isActive('/dashboard') ? 'bg-primary text-white' : 'hover:bg-bg'}`}

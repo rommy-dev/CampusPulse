@@ -18,6 +18,7 @@
   --duration-fast: 150ms;
   --duration-normal: 200ms;
   --duration-slow: 300ms;
+  --duration-theme: 400ms;
 }
 
 /* Button press feedback */
@@ -52,9 +53,11 @@
   --color-warning: #FBBF24;
 }
 
-body {
+html, body {
   background-color: var(--color-bg);
   color: var(--color-text-primary);
+  transition: background-color var(--duration-theme) var(--ease-in-out), color var(--duration-theme) var(--ease-in-out);
+  min-height: 100%;
 }
 
 /* Safe area support for mobile devices */

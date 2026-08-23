@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, FileText, User, Users, LogOut, TrendingUp } from 'lucide-react'
+import { LayoutDashboard, FileText, Users, TrendingUp } from 'lucide-react'
 
-function NavBottom({ userRole, onLogout }) {
+function NavBottom({ userRole }) {
   const location = useLocation()
   
   const isActive = (path) => location.pathname === path
@@ -11,46 +11,32 @@ function NavBottom({ userRole, onLogout }) {
       <div className="flex justify-around items-center py-2 pb-4">
         <Link 
           to="/dashboard" 
-          className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-text-primary min-w-16 ${userRole !== 'admin' ? 'hidden' : ''} ${isActive('/dashboard') ? 'text-primary' : 'text-text-secondary'}`}
+          className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-text-primary min-w-16 ${userRole !== 'admin' ? 'hidden' : ''} ${isActive('/dashboard') ? 'bg-primary text-white' : 'text-text-secondary'}`}
         >
           <LayoutDashboard className="w-5 h-5" />
           <span className="text-[10px] font-medium">Dashboard</span>
         </Link>
         <Link 
           to="/utilisateurs" 
-          className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-text-primary min-w-16 ${userRole !== 'admin' ? 'hidden' : ''} ${isActive('/utilisateurs') ? 'text-primary' : 'text-text-secondary'}`}
+          className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-text-primary min-w-16 ${userRole !== 'admin' ? 'hidden' : ''} ${isActive('/utilisateurs') ? 'bg-primary text-white' : 'text-text-secondary'}`}
         >
           <Users className="w-5 h-5" />
           <span className="text-[10px] font-medium">Utilisateurs</span>
         </Link>
         <Link 
           to="/statistiques" 
-          className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-text-primary min-w-16 ${userRole !== 'admin' ? 'hidden' : ''} ${isActive('/statistiques') ? 'text-primary' : 'text-text-secondary'}`}
+          className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-text-primary min-w-16 ${userRole !== 'admin' ? 'hidden' : ''} ${isActive('/statistiques') ? 'bg-primary text-white' : 'text-text-secondary'}`}
         >
           <TrendingUp className="w-5 h-5" />
           <span className="text-[10px] font-medium">Stats</span>
         </Link>
         <Link 
           to="/formulaire" 
-          className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-text-primary min-w-16 ${isActive('/formulaire') ? 'text-primary' : 'text-text-secondary'}`}
+          className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-text-primary min-w-16 ${isActive('/formulaire') ? 'bg-primary text-white' : 'text-text-secondary'}`}
         >
           <FileText className="w-5 h-5" />
           <span className="text-[10px] font-medium">Formulaire</span>
         </Link>
-        <Link 
-          to="/profil" 
-          className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-text-primary min-w-16 ${isActive('/profil') ? 'text-primary' : 'text-text-secondary'}`}
-        >
-          <User className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Profil</span>
-        </Link>
-        <button 
-          onClick={onLogout}
-          className="btn-press flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-text-secondary min-w-16"
-        >
-          <LogOut className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Déconnexion</span>
-        </button>
       </div>
     </nav>
   )
