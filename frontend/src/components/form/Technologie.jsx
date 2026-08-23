@@ -208,6 +208,28 @@ function Technologie({ formData, setFormData, validationErrors, setValidationErr
           </div>
         )}
       </div>
+
+      <div className="bg-surface rounded-lg shadow-sm border border-text-secondary/10 p-4 md:p-6">
+        <h2 className="text-lg font-semibold text-text-primary mb-4">Éclairage</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-text-secondary mb-2">Combien d'heures par jour la lumière est-elle allumée chez vous ?</label>
+            <input
+              type="number"
+              min="0"
+              step="0.5"
+              value={formData.lumiere_heures_jour}
+              onChange={(e) => {
+                setFormData(prev => ({ ...prev, lumiere_heures_jour: e.target.value }))
+                if (validationErrors.lumiere_heures_jour) setValidationErrors(prev => ({ ...prev, lumiere_heures_jour: null }))
+              }}
+              placeholder="Ex: 6"
+              className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            {validationErrors.lumiere_heures_jour && <p className="text-danger text-sm mt-1">{validationErrors.lumiere_heures_jour}</p>}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

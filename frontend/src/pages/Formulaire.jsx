@@ -153,6 +153,7 @@ function Formulaire() {
     tablette_possede: false,
     tablette_nombre: '',
     recharge_tablette_frequence: '',
+    lumiere_heures_jour: '',
 
     // Étape 5: Mode de vie
     alcool_boit: false,
@@ -414,6 +415,10 @@ function Formulaire() {
         stepsWithErrors.add(4)
       }
     }
+    if (formData.lumiere_heures_jour === '' || formData.lumiere_heures_jour < 0) {
+      errors.lumiere_heures_jour = 'Veuillez entrer un nombre positif'
+      stepsWithErrors.add(4)
+    }
 
     // Étape 5: Mode de vie
     if (!formData.ordures_quantite) {
@@ -535,6 +540,7 @@ function Formulaire() {
           tablette_nombre: parseInt(formData.tablette_nombre),
           recharge_tablette_frequence: parseInt(formData.recharge_tablette_frequence)
         }),
+        lumiere_heures_jour: parseFloat(formData.lumiere_heures_jour),
         alcool_boit: formData.alcool_boit,
         nuisance_sonore: formData.nuisance_sonore,
         ordures_quantite: formData.ordures_quantite
