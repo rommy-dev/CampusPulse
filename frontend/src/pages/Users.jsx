@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { UsersIcon, Eye, Edit, Trash2, X, User } from 'lucide-react'
+import { UsersIcon, Eye, Edit, Trash2, X, User, Download } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import LoadingSpinner from '../components/LoadingSpinner'
 import Badge from '../components/Badge'
 import { FILIERES, ANNEES_UNIVERSITAIRES } from '../constants/filieres'
+import ExcelJS from 'exceljs'
 
 function Users() {
   const [users, setUsers] = useState([])
@@ -16,6 +17,7 @@ function Users() {
   const [deleteMode, setDeleteMode] = useState(false)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [exporting, setExporting] = useState(false)
 
   const [editForm, setEditForm] = useState({
     nom: '',
@@ -136,6 +138,88 @@ function Users() {
     }
   }
 
+  async function exportToExcel() {
+    if (users.length === 0) return
+    setExporting(true)
+
+    try {
+      const workbook = new ExcelJS.Workbook()
+      const worksheet = workbook.addWorksheet('Utilisateurs')
+
+      worksheet.columns = [
+        { header: 'Photo', key: 'photo', width: 20 },
+        { header: 'Nom', key: 'nom', width: 18 },
+        { header: 'Prénom', key: 'prenom', width: 18 },
+        { header: 'Email', key: 'email', width: 28 },
+        { header: 'Date de naissance', key: 'date_naissance', width: 16 },
+        { header: 'Genre', key: 'genre', width: 12 },
+        { header: 'Filière', key: 'filiere', width: 40 },
+        { header: 'Niveau universitaire', key: 'annee_universitaire', width: 16 },
+        { header: 'Rôle', key: 'role', width: 12 },
+      ]
+      worksheet.getRow(1).font = { bold: true }
+
+      for (let i = 0; i < users.length; i++) {
+        const user = users[i]
+        const rowIndex = i + 2 // ligne 1 = en-têtes
+
+        worksheet.addRow({
+          photo: '',
+          nom: user.nom || '',
+          prenom: user.prenom || '',
+          email: user.email || '',
+          date_naissance: user.date_naissance || '',
+          genre: user.genre || '',
+          filiere: user.filiere || '',
+          annee_universitaire: user.annee_universitaire || '',
+          role: user.role || '',
+        })
+
+        worksheet.getRow(rowIndex).height = 80
+
+        if (user.avatar_url) {
+          try {
+            const response = await fetch(user.avatar_url)
+            const arrayBuffer = await response.arrayBuffer()
+
+            // Détecter l'extension depuis l'URL
+            const urlParts = user.avatar_url.split('.')
+            const extension = urlParts[urlParts.length - 1].split('?')[0] || 'png'
+
+            const imageId = workbook.addImage({
+              buffer: arrayBuffer,
+              extension: extension,
+            })
+
+            worksheet.addImage(imageId, {
+              tl: { col: 0.1, row: rowIndex - 1 + 0.1 },
+              ext: { width: 70, height: 70 },
+            })
+          } catch (imgError) {
+            console.warn(`Photo introuvable pour ${user.email}:`, imgError)
+          }
+        }
+      }
+
+      const buffer = await workbook.xlsx.writeBuffer()
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      })
+
+      const today = new Date().toISOString().split('T')[0]
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `utilisateurs_${today}.xlsx`
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      setError("Erreur lors de l'export : " + err.message)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="max-w-7xl w-full min-w-0 mx-auto px-2 md:px-0">
@@ -146,11 +230,22 @@ function Users() {
 
   return (
     <div className="max-w-7xl w-full min-w-0 mx-auto px-2 md:px-0">
-      <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
-        <UsersIcon className="w-6 h-6 md:w-8 md:h-8 text-primary" />
-        <h1 className="text-2xl md:text-3xl font-bold text-text-primary">
-          Gestion des Utilisateurs
-        </h1>
+      <div className="flex items-center justify-between gap-2 md:gap-3 mb-4 md:mb-6">
+        <div className="flex items-center gap-2 md:gap-3">
+          <UsersIcon className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+          <h1 className="text-2xl md:text-3xl font-bold text-text-primary">
+            Gestion des Utilisateurs
+          </h1>
+        </div>
+        <button
+          onClick={exportToExcel}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 transition-colors disabled:opacity-60"
+          disabled={users.length === 0 || exporting}
+        >
+          <Download className="w-4 h-4" />
+          <span className="hidden sm:inline">{exporting ? 'Export en cours...' : 'Exporter en Excel'}</span>
+          <span className="sm:hidden">{exporting ? '...' : 'Exporter'}</span>
+        </button>
       </div>
 
       {error && (
@@ -180,7 +275,7 @@ function Users() {
                 <th className="px-4 py-3 text-left text-sm font-medium text-text-secondary">Email</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-text-secondary">Rôle</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-text-secondary">Filière</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-text-secondary">Année</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-text-secondary">Niveau</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-text-secondary">Actions</th>
               </tr>
             </thead>
@@ -303,7 +398,7 @@ function Users() {
                   <p className="text-text-primary">{selectedUser.filiere || '-'}</p>
                 </div>
                 <div className="col-span-2">
-                  <p className="text-sm text-text-secondary">Année universitaire</p>
+                  <p className="text-sm text-text-secondary">Niveau universitaire</p>
                   <p className="text-text-primary">{selectedUser.annee_universitaire || '-'}</p>
                 </div>
               </div>
@@ -405,7 +500,7 @@ function Users() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-text-secondary mb-1">Année universitaire</label>
+                <label className="block text-sm text-text-secondary mb-1">Niveau universitaire</label>
                 <select
                   value={editForm.annee_universitaire}
                   onChange={(e) => setEditForm({...editForm, annee_universitaire: e.target.value})}

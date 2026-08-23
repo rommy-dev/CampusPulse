@@ -181,7 +181,7 @@ function Signup() {
         </div>
 
         <div>
-          <label className="block text-sm text-text-secondary mb-1">Année universitaire</label>
+          <label className="block text-sm text-text-secondary mb-1">Niveau universitaire</label>
           <select
             required
             value={form.annee_universitaire}

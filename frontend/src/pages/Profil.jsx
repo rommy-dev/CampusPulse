@@ -157,7 +157,7 @@ function Profil() {
           </div>
 
           <div>
-            <label className="block text-sm text-text-secondary mb-1">Année universitaire</label>
+            <label className="block text-sm text-text-secondary mb-1">Niveau universitaire</label>
             <select
               value={form.annee_universitaire}
               onChange={(e) => handleChange('annee_universitaire', e.target.value)}
