@@ -329,8 +329,20 @@ function LogementTransport({ formData, setFormData, validationErrors, setValidat
     return madagascarData.districts[formData.region] || []
   }
 
+  const getFamilyDistricts = () => {
+    if (formData.famille_antananarivo && formData.habite_chez_famille_ville) {
+      return madagascarData.districts.analamanga || []
+    }
+
+    return getDistricts()
+  }
+
   const getCommunes = () => {
     return madagascarData.communes[formData.district] || []
+  }
+
+  const getFamilyCommunes = () => {
+    return madagascarData.communes[formData.famille_district] || []
   }
 
   const getCities = () => {
@@ -652,7 +664,7 @@ function LogementTransport({ formData, setFormData, validationErrors, setValidat
                   
                   <div>
                     <label className="block text-text-secondary mb-2">District</label>
-                    {getDistricts().length > 0 ? (
+                    {getFamilyDistricts().length > 0 ? (
                       <select
                         value={formData.famille_district || ''}
                         onChange={(e) => {
@@ -661,7 +673,7 @@ function LogementTransport({ formData, setFormData, validationErrors, setValidat
                         className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
                       >
                         <option value="">Sélectionnez un district</option>
-                        {getDistricts().map(district => (
+                        {getFamilyDistricts().map(district => (
                           <option key={district.value} value={district.value}>{district.label}</option>
                         ))}
                       </select>
@@ -681,7 +693,7 @@ function LogementTransport({ formData, setFormData, validationErrors, setValidat
                   {formData.famille_district && (
                     <div>
                       <label className="block text-text-secondary mb-2">Commune</label>
-                      {getCommunes().length > 0 ? (
+                      {getFamilyCommunes().length > 0 ? (
                         <select
                           value={formData.famille_commune || ''}
                           onChange={(e) => {
@@ -690,7 +702,7 @@ function LogementTransport({ formData, setFormData, validationErrors, setValidat
                           className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                           <option value="">Sélectionnez une commune</option>
-                          {getCommunes().map(commune => (
+                          {getFamilyCommunes().map(commune => (
                             <option key={commune.value} value={commune.value}>{commune.label}</option>
                           ))}
                         </select>
