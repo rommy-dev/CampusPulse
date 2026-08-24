@@ -9,12 +9,17 @@ function HygieneVetements({ formData, setFormData, validationErrors, setValidati
             <div className="space-y-2">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
-                  type="radio"
+                  type="checkbox"
                   name="type_hygiene"
                   value="douche"
-                  checked={formData.type_hygiene === 'douche'}
+                  checked={Array.isArray(formData.type_hygiene) ? formData.type_hygiene.includes('douche') : false}
                   onChange={(e) => {
-                    setFormData(prev => ({ ...prev, type_hygiene: e.target.value }))
+                    const checked = e.target.checked
+                    setFormData(prev => {
+                      const prevArr = Array.isArray(prev.type_hygiene) ? prev.type_hygiene : []
+                      const newArr = checked ? [...prevArr, e.target.value] : prevArr.filter(v => v !== e.target.value)
+                      return { ...prev, type_hygiene: newArr }
+                    })
                     if (validationErrors.type_hygiene) setValidationErrors(prev => ({ ...prev, type_hygiene: null }))
                   }}
                   className="w-4 h-4 text-primary"
@@ -23,12 +28,17 @@ function HygieneVetements({ formData, setFormData, validationErrors, setValidati
               </label>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
-                  type="radio"
+                  type="checkbox"
                   name="type_hygiene"
                   value="toilette_rapide"
-                  checked={formData.type_hygiene === 'toilette_rapide'}
+                  checked={Array.isArray(formData.type_hygiene) ? formData.type_hygiene.includes('toilette_rapide') : false}
                   onChange={(e) => {
-                    setFormData(prev => ({ ...prev, type_hygiene: e.target.value }))
+                    const checked = e.target.checked
+                    setFormData(prev => {
+                      const prevArr = Array.isArray(prev.type_hygiene) ? prev.type_hygiene : []
+                      const newArr = checked ? [...prevArr, e.target.value] : prevArr.filter(v => v !== e.target.value)
+                      return { ...prev, type_hygiene: newArr }
+                    })
                     if (validationErrors.type_hygiene) setValidationErrors(prev => ({ ...prev, type_hygiene: null }))
                   }}
                   className="w-4 h-4 text-primary"

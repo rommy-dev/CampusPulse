@@ -129,7 +129,7 @@ function Formulaire() {
     },
 
     // Étape 3: Hygiène & Vêtements
-    type_hygiene: '',
+    type_hygiene: [],
     hygiene_frequence_jour: '',
     hygiene_frequence_semaine: '',
     lave_cheveux: false,
@@ -363,7 +363,7 @@ function Formulaire() {
     }
 
     // Étape 3: Hygiène & Vêtements
-    if (!formData.type_hygiene) {
+    if (!formData.type_hygiene || formData.type_hygiene.length === 0) {
       errors.type_hygiene = 'Ce champ est obligatoire'
       stepsWithErrors.add(3)
     }
