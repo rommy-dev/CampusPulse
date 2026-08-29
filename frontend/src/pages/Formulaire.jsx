@@ -1,16 +1,20 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { FileText, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import LoadingSpinner from '../components/LoadingSpinner'
 import Badge from '../components/Badge'
+import InformationsGenerales from '../components/form/InformationsGenerales'
 import LogementTransport from '../components/form/LogementTransport'
+import BudgetEau from '../components/form/BudgetEau'
 import Alimentation from '../components/form/Alimentation'
 import HygieneVetements from '../components/form/HygieneVetements'
+import ChimieVerte from '../components/form/ChimieVerte'
 import Technologie from '../components/form/Technologie'
 import ModeDeVie from '../components/form/ModeDeVie'
 
 function Formulaire() {
   const [user, setUser] = useState(null)
+  const [userProfile, setUserProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -19,17 +23,56 @@ function Formulaire() {
   const [validationErrors, setValidationErrors] = useState({})
   const [stepValidationErrors, setStepValidationErrors] = useState([])
   const [currentStep, setCurrentStep] = useState(1)
-  const totalSteps = 5
+  const totalSteps = 8
 
   const stepTitles = [
+    'Informations générales',
     'Logement & Transport',
+    'Budget & Eau',
     'Alimentation',
     'Hygiène & Vêtements',
+    'Chimie verte',
     'Technologie',
     'Mode de vie'
   ]
 
+  const calculateAgeInfo = useCallback((dateNaissance) => {
+    if (!dateNaissance) return { tranche_age: '', age_exact: '' }
+
+    const birthDate = new Date(dateNaissance)
+    const today = new Date()
+    const age = today.getFullYear() - birthDate.getFullYear()
+    const monthDiff = today.getMonth() - birthDate.getMonth()
+
+    // Adjust age if birthday hasn't occurred yet this year
+    const ageExact = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) 
+      ? age - 1 
+      : age
+
+    // Calculate age range
+    let tranche_age = ''
+    if (ageExact < 18) {
+      tranche_age = 'moins_18'
+    } else if (ageExact >= 18 && ageExact <= 22) {
+      tranche_age = '18_22'
+    } else if (ageExact >= 23 && ageExact <= 25) {
+      tranche_age = '23_25'
+    } else {
+      tranche_age = 'plus_25'
+    }
+
+    return { tranche_age, age_exact: ageExact.toString() }
+  }, [])
+
   const [formData, setFormData] = useState({
+    // Étape 1: Informations générales
+    date_naissance: '',
+    genre: '',
+    filiere: '',
+    annee_universitaire: '',
+    residence_principale: '',
+    loyer_mensuel: '',
+    source_financement: [],
     // Étape 1: Logement & Transport
     habite_cur_vontovorona: false,
     type_logement_cur: '',
@@ -200,6 +243,22 @@ function Formulaire() {
   const validateForm = () => {
     const errors = {}
     const stepsWithErrors = new Set()
+
+    // Informations générales : Q7 à Q9
+    if (!formData.residence_principale) {
+      errors.residence_principale = 'Ce champ est obligatoire'
+      stepsWithErrors.add(1)
+    }
+
+    if (!formData.loyer_mensuel) {
+      errors.loyer_mensuel = 'Ce champ est obligatoire'
+      stepsWithErrors.add(1)
+    }
+
+    if (!formData.source_financement || formData.source_financement.length === 0) {
+      errors.source_financement = 'Veuillez sélectionner au moins une source de financement'
+      stepsWithErrors.add(1)
+    }
 
     // Étape 1: Logement & Transport
     // Logement
@@ -493,7 +552,24 @@ function Formulaire() {
     setError(null)
 
     try {
+      // Compute age info from date_naissance provided by InformationsGenerales
+      const ageInfo = calculateAgeInfo(formData.date_naissance)
+      const tranche_age = ageInfo.tranche_age || null
+      const age_exact = ageInfo.age_exact ? parseInt(ageInfo.age_exact, 10) : null
+
       const answers = {
+        // Informations générales
+        date_naissance: formData.date_naissance || null,
+        genre: formData.genre || null,
+        filiere: formData.filiere || null,
+        annee_universitaire: formData.annee_universitaire || null,
+        residence_principale: formData.residence_principale || null,
+        loyer_mensuel: formData.loyer_mensuel || null,
+        source_financement: formData.source_financement || [],
+        tranche_age,
+        age_exact,
+
+        
         habite_cur_vontovorona: formData.habite_cur_vontovorona,
         ...(formData.habite_cur_vontovorona && {
           type_logement_cur: formData.type_logement_cur,
@@ -688,12 +764,12 @@ function Formulaire() {
 
       {/* Progress indicator */}
       <div className="mb-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center md:grid md:grid-cols-4 md:gap-2">
           {stepTitles.map((title, index) => (
-            <div key={index} className="flex flex-col items-center flex-1">
+            <div key={index} className="flex flex-col items-start flex-1">
               <div 
                 onClick={() => goToStep(index + 1)}
-                className={`flex items-center gap-2 border-b-2 pb-2 cursor-pointer ${
+                className={`flex items-center gap-2 border-b-2 pb-1 mb-1 cursor-pointer ${
                     currentStep === index + 1
                       ? 'border-primary'
                       : currentStep > index + 1
@@ -721,13 +797,13 @@ function Formulaire() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Étape 1: Logement & Transport */}
+        {/* Étape 1: Informations générales */}
         {currentStep === 1 && (
-          <LogementTransport 
-            formData={formData} 
-            setFormData={setFormData} 
-            validationErrors={validationErrors} 
-            setValidationErrors={setValidationErrors} 
+          <InformationsGenerales
+            formData={formData}
+            setFormData={setFormData}
+            validationErrors={validationErrors}
+            setValidationErrors={setValidationErrors}
           />
         )}
 

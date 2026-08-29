@@ -42,4 +42,6 @@ export const ANNEES_UNIVERSITAIRES = [
   'LP1', 'LP2', 'LP3',
   'M1', 'M2',
   'MP1', 'MP2',
+  'Doctorat',
+  'Autre',
 ]
