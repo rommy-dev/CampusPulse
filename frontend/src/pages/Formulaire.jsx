@@ -8,7 +8,7 @@ import TransportConsommation from '../components/form/TransportConsommation'
 import BudgetEau from '../components/form/BudgetEau'
 import Alimentation from '../components/form/Alimentation'
 import CycleVetements from '../components/form/CycleVetements'
-import ChimieVerte from '../components/form/ChimieVerte'
+import Hygiene from '../components/form/Hygiene'
 import Technologie from '../components/form/Technologie'
 import ModeDeVie from '../components/form/ModeDeVie'
 
@@ -31,7 +31,7 @@ function Formulaire() {
     'Alimentation',
     'Technologie',
     'Cycle de vie des vêtements',
-    'Chimie verte',
+    'Hygiene',
     'Mode de vie'
   ]
 
@@ -124,6 +124,14 @@ function Formulaire() {
     sechage_exterieur: null,
     repare_vetements: null,
     devenir_vetements_usages: '',
+
+    // Étape 7: Hygiene
+    produits_chimiques_utilises: [],
+    lit_etiquettes_produits: null,
+    connait_principes_chimie_verte: null,
+    procedes_locaux_durables: null,
+    favorable_ateliers_ecologiques: null,
+    contribution_formation_environnement: '',
   })
 
   useEffect(() => {
@@ -417,6 +425,35 @@ function Formulaire() {
         'Veuillez sélectionner ce que vous faites de vos vêtements usagés.'
     }
 
+    // Étape 7: Hygiene
+    if (
+      !Array.isArray(formData.produits_chimiques_utilises) ||
+      formData.produits_chimiques_utilises.length === 0
+    ) {
+      errors.produits_chimiques_utilises =
+        'Veuillez sélectionner au moins une réponse.'
+    }
+
+    if (formData.lit_etiquettes_produits === null) {
+      errors.lit_etiquettes_produits =
+        'Veuillez sélectionner une réponse.'
+    }
+
+    if (formData.connait_principes_chimie_verte === null) {
+      errors.connait_principes_chimie_verte =
+        'Veuillez sélectionner une réponse.'
+    }
+
+    if (formData.procedes_locaux_durables === null) {
+      errors.procedes_locaux_durables =
+        'Veuillez sélectionner une réponse.'
+    }
+
+    if (formData.favorable_ateliers_ecologiques === null) {
+      errors.favorable_ateliers_ecologiques =
+        'Veuillez sélectionner une réponse.'
+    }
+
     setValidationErrors(errors)
     setStepValidationErrors(Array.from(stepsWithErrors).sort())
     return Object.keys(errors).length === 0
@@ -524,13 +561,13 @@ function Formulaire() {
         repare_vetements: formData.repare_vetements,
         devenir_vetements_usages: formData.devenir_vetements_usages,
         
-        alcool_boit: formData.alcool_boit,
-        type_dechet: formData.type_dechet,
-        ordures_frequence_semaine: parseInt(formData.ordures_frequence_semaine),
-        elimination_ordures: formData.elimination_ordures,
-        tabac: formData.tabac,
-        cigarettes: formData.cigarettes,
-        ...(formData.alcool_boit || formData.tabac || formData.cigarettes ? { produits_stupéfiants_frequence_semaine: parseInt(formData.produits_stupéfiants_frequence_semaine) } : {})
+        // Hygiene
+        produits_chimiques_utilises: formData.produits_chimiques_utilises,
+        lit_etiquettes_produits: formData.lit_etiquettes_produits,
+        connait_principes_chimie_verte: formData.connait_principes_chimie_verte,
+        procedes_locaux_durables: formData.procedes_locaux_durables,
+        favorable_ateliers_ecologiques: formData.favorable_ateliers_ecologiques,
+        contribution_formation_environnement: formData.contribution_formation_environnement,
       }
 
       const { error: insertError } = await supabase
@@ -708,6 +745,15 @@ function Formulaire() {
 
         {currentStep === 6 && (
           <CycleVetements
+            formData={formData}
+            setFormData={setFormData}
+            validationErrors={validationErrors}
+            setValidationErrors={setValidationErrors}
+          />
+        )}
+
+        {currentStep === 7 && (
+          <Hygiene
             formData={formData}
             setFormData={setFormData}
             validationErrors={validationErrors}
