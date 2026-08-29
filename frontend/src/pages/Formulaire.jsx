@@ -93,78 +93,19 @@ function Formulaire() {
     acces_eau_potable: '',
     pratiques_economie_eau: [],
 
-    // Étape 2: Alimentation
-    alimentation: {
-      saute_repas: false,
-      moyen_cuisson: [],
-      cuisson_heures_jour: '',
-      cuisson_fois_jour: '',
-      cuisson_autre_precision: '',
-      petit_dejeuner: {
-        mode: [],
-        aliments: {
-          boissons: [],
-          feculents: [],
-          produits_locaux: [],
-          proteines: [],
-          fruits: [],
-          autre: ''
-        },
-        riz_frequence_jour: null
-      },
-      dejeuner: {
-        mode: [],
-        aliments: {
-          feculents: [],
-          legumes: [],
-          proteines_animales: [],
-          proteines_vegetales: [],
-          fruits: [],
-          autre: ''
-        },
-        riz_frequence_jour: null
-      },
-      diner: {
-        mode: [],
-        aliments: {
-          feculents: [],
-          legumes: [],
-          proteines_animales: [],
-          proteines_vegetales: [],
-          fruits: [],
-          autre: ''
-        },
-        riz_frequence_jour: null
-      },
-      gouter: {
-        mode: [],
-        aliments: {
-          boissons: [],
-          fruits: [],
-          produits_cereaux: [],
-          snacks: [],
-          autre: ''
-        },
-        pas_de_gouter: false
-      },
-      boissons: {
-        eau: { selectionne: false, frequence_jour: null, litres_jour: null },
-        eau_gazeuse: { selectionne: false, frequence_jour: null, litres_jour: null },
-        the: { selectionne: false, frequence_jour: null },
-        cafe: { selectionne: false, frequence_jour: null },
-        cacao: { selectionne: false, frequence_jour: null },
-        lait: { selectionne: false, frequence_jour: null },
-        jus_fruits: { selectionne: false, frequence_jour: null },
-        jus_legumes: { selectionne: false, frequence_jour: null },
-        smoothie: { selectionne: false, frequence_jour: null },
-        infusion: { selectionne: false, frequence_jour: null },
-        boisson_gazeuse: { selectionne: false, frequence_jour: null },
-        boisson_energetique: { selectionne: false, frequence_jour: null },
-        boisson_sucree: { selectionne: false, frequence_jour: null },
-        boisson_sans_sucre: { selectionne: false, frequence_jour: null },
-        autre: { selectionne: false, frequence_jour: null, precision: '' }
-      }
-    },
+    // Étape 4: Alimentation
+    nombre_repas_jour: '',
+    lieu_repas_principaux: '',
+    source_approvisionnement_alimentaire: '',
+    energie_cuisson: '',
+    frequence_collation: '',
+    depense_alimentation_jour: '',
+    consommation_viande_poisson: '',
+    fruits_legumes_locaux_saison: '',
+    produits_plastique_usage_unique: '',
+    alimentation_equilibree: '',
+    gestion_restes_alimentaires: '',
+    impact_chaine_approvisionnement: '',
 
     // Étape 3: Hygiène & Vêtements
     type_hygiene: [],
@@ -337,82 +278,72 @@ function Formulaire() {
       stepsWithErrors.add(3)
     }
 
-    // Étape 2: Alimentation
-    // Skip validation if alimentation is not initialized yet
-    if (!formData.alimentation) {
-      errors.alimentation = 'Veuillez remplir les informations alimentaires'
-      stepsWithErrors.add(2)
-    } else {
-      // Validate cooking method
-      if (!formData.alimentation.moyen_cuisson || formData.alimentation.moyen_cuisson.length === 0) {
-        errors.moyen_cuisson = 'Veuillez sélectionner au moins un moyen de cuisson'
-        stepsWithErrors.add(2)
-      }
+     // Alimentation
+    if (!formData.nombre_repas_jour) {
+      errors.nombre_repas_jour = 'Ce champ est obligatoire'
+      stepsWithErrors.add(4)
+    }
 
-      // Validate conditional cooking fields
-      const hasGazOrResistance = formData.alimentation.moyen_cuisson?.includes('gaz') || formData.alimentation.moyen_cuisson?.includes('resistance')
-      if (hasGazOrResistance && (formData.alimentation.cuisson_heures_jour === '' || formData.alimentation.cuisson_heures_jour < 0)) {
-        errors.cuisson_heures_jour = 'Veuillez entrer un nombre positif'
-        stepsWithErrors.add(2)
-      }
+    if (!formData.lieu_repas_principaux) {
+      errors.lieu_repas_principaux = 'Ce champ est obligatoire'
+      stepsWithErrors.add(4)
+    }
 
-      const hasCharbonOrBois = formData.alimentation.moyen_cuisson?.includes('charbon') || formData.alimentation.moyen_cuisson?.includes('bois')
-      if (hasCharbonOrBois && (formData.alimentation.cuisson_fois_jour === '' || formData.alimentation.cuisson_fois_jour < 0)) {
-        errors.cuisson_fois_jour = 'Veuillez entrer un nombre positif'
-        stepsWithErrors.add(2)
-      }
+    if (!formData.source_approvisionnement_alimentaire) {
+      errors.source_approvisionnement_alimentaire =
+        'Ce champ est obligatoire'
+      stepsWithErrors.add(4)
+    }
 
-      if (formData.alimentation.moyen_cuisson?.includes('autre') && !formData.alimentation.cuisson_autre_precision) {
-        errors.cuisson_autre_precision = 'Veuillez préciser le moyen de cuisson'
-        stepsWithErrors.add(2)
-      }
+    if (!formData.energie_cuisson) {
+      errors.energie_cuisson = 'Ce champ est obligatoire'
+      stepsWithErrors.add(4)
+    }
 
-      // Validate at least one meal has mode selected
-      const hasMealMode = ['petit_dejeuner', 'dejeuner', 'diner', 'gouter'].some(
-        meal => formData.alimentation[meal]?.mode && formData.alimentation[meal].mode.length > 0
-      )
-      if (!hasMealMode) {
-        errors.alimentation_mode = 'Veuillez sélectionner au moins un mode de repas'
-        stepsWithErrors.add(2)
-      }
+    if (!formData.frequence_collation) {
+      errors.frequence_collation = 'Ce champ est obligatoire'
+      stepsWithErrors.add(4)
+    }
 
-      // Validate rice frequency when rice is selected and cooking at home
-      ['petit_dejeuner', 'dejeuner', 'diner'].forEach(meal => {
-        const mealData = formData.alimentation[meal]
-        if (mealData && mealData.aliments) {
-          const hasRiz = mealData.aliments.feculents?.includes('riz')
-          const cooksAtHome = mealData.mode?.includes('cuisine_chez_moi')
-          if (hasRiz && cooksAtHome) {
-            if (!mealData.riz_frequence_jour || mealData.riz_frequence_jour < 0) {
-              errors[`${meal}_riz_frequence`] = 'Veuillez entrer un nombre positif'
-              stepsWithErrors.add(2)
-            }
-          }
-        }
-      })
+    if (!formData.depense_alimentation_jour) {
+      errors.depense_alimentation_jour = 'Ce champ est obligatoire'
+      stepsWithErrors.add(4)
+    }
 
-      // Validate beverage frequencies when selected
-      if (formData.alimentation.boissons) {
-        Object.entries(formData.alimentation.boissons).forEach(([boissonKey, boissonData]) => {
-          if (boissonData && boissonData.selectionne) {
-            if (!boissonData.frequence_jour || boissonData.frequence_jour < 0) {
-              errors[`boisson_${boissonKey}_frequence`] = 'Veuillez entrer un nombre positif'
-              stepsWithErrors.add(2)
-            }
-            // Validate water quantity for water types
-            if ((boissonKey === 'eau' || boissonKey === 'eau_gazeuse') && 
-                (!boissonData.litres_jour || boissonData.litres_jour < 0)) {
-              errors[`boisson_${boissonKey}_litres`] = 'Veuillez entrer une quantité positive'
-              stepsWithErrors.add(2)
-            }
-            // Validate autre precision
-            if (boissonKey === 'autre' && !boissonData.precision) {
-              errors.boisson_autre_precision = 'Veuillez préciser la boisson'
-              stepsWithErrors.add(2)
-            }
-          }
-        })
-      }
+    if (!formData.consommation_viande_poisson) {
+      errors.consommation_viande_poisson =
+        'Ce champ est obligatoire'
+      stepsWithErrors.add(4)
+    }
+
+    if (!formData.fruits_legumes_locaux_saison) {
+      errors.fruits_legumes_locaux_saison =
+        'Ce champ est obligatoire'
+      stepsWithErrors.add(4)
+    }
+
+    if (!formData.produits_plastique_usage_unique) {
+      errors.produits_plastique_usage_unique =
+        'Ce champ est obligatoire'
+      stepsWithErrors.add(4)
+    }
+
+    if (!formData.alimentation_equilibree) {
+      errors.alimentation_equilibree =
+        'Ce champ est obligatoire'
+      stepsWithErrors.add(4)
+    }
+
+    if (!formData.gestion_restes_alimentaires) {
+      errors.gestion_restes_alimentaires =
+        'Ce champ est obligatoire'
+      stepsWithErrors.add(4)
+    }
+
+    if (!formData.impact_chaine_approvisionnement?.trim()) {
+      errors.impact_chaine_approvisionnement =
+        'Ce champ est obligatoire'
+      stepsWithErrors.add(4)
     }
 
     // Étape 3: Hygiène & Vêtements
@@ -584,40 +515,28 @@ function Formulaire() {
         acces_eau_potable: formData.acces_eau_potable || null,
         pratiques_economie_eau: formData.pratiques_economie_eau || [],
 
+        // Alimentation
+        nombre_repas_jour: formData.nombre_repas_jour || null,
+        lieu_repas_principaux: formData.lieu_repas_principaux || null,
+        source_approvisionnement_alimentaire:
+          formData.source_approvisionnement_alimentaire || null,
+        energie_cuisson: formData.energie_cuisson || null,
+        frequence_collation: formData.frequence_collation || null,
+        depense_alimentation_jour:
+          formData.depense_alimentation_jour || null,
+        consommation_viande_poisson:
+          formData.consommation_viande_poisson || null,
+        fruits_legumes_locaux_saison:
+          formData.fruits_legumes_locaux_saison || null,
+        produits_plastique_usage_unique:
+          formData.produits_plastique_usage_unique || null,
+        alimentation_equilibree:
+          formData.alimentation_equilibree || null,
+        gestion_restes_alimentaires:
+          formData.gestion_restes_alimentaires || null,
+        impact_chaine_approvisionnement:
+          formData.impact_chaine_approvisionnement || null,
 
-        alimentation: formData.alimentation ? {
-          ...formData.alimentation,
-          moyen_cuisson: formData.alimentation.moyen_cuisson,
-          ...(formData.alimentation.cuisson_heures_jour !== '' && { cuisson_heures_jour: parseFloat(formData.alimentation.cuisson_heures_jour) }),
-          ...(formData.alimentation.cuisson_fois_jour !== '' && { cuisson_fois_jour: parseInt(formData.alimentation.cuisson_fois_jour) }),
-          ...(formData.alimentation.cuisson_autre_precision && { cuisson_autre_precision: formData.alimentation.cuisson_autre_precision }),
-          // Convert numeric fields
-          petit_dejeuner: {
-            ...formData.alimentation.petit_dejeuner,
-            riz_frequence_jour: formData.alimentation.petit_dejeuner?.riz_frequence_jour ?
-              parseInt(formData.alimentation.petit_dejeuner.riz_frequence_jour) : null
-          },
-          dejeuner: {
-            ...formData.alimentation.dejeuner,
-            riz_frequence_jour: formData.alimentation.dejeuner?.riz_frequence_jour ?
-              parseInt(formData.alimentation.dejeuner.riz_frequence_jour) : null
-          },
-          diner: {
-            ...formData.alimentation.diner,
-            riz_frequence_jour: formData.alimentation.diner?.riz_frequence_jour ?
-              parseInt(formData.alimentation.diner.riz_frequence_jour) : null
-          },
-          boissons: Object.fromEntries(
-            Object.entries(formData.alimentation.boissons).map(([key, value]) => [
-              key,
-              {
-                ...value,
-                frequence_jour: value.frequence_jour ? parseInt(value.frequence_jour) : null,
-                litres_jour: value.litres_jour ? parseFloat(value.litres_jour) : null
-              }
-            ])
-          )
-        } : null,
         type_hygiene: formData.type_hygiene,
         hygiene_frequence_jour: parseInt(formData.hygiene_frequence_jour),
         hygiene_frequence_semaine: parseInt(formData.hygiene_frequence_semaine),
@@ -802,6 +721,7 @@ function Formulaire() {
           />
         )}
 
+        {/* Étape 3: Budget & Eau */}
         {currentStep === 3 && (
           <BudgetEau
             formData={formData}
@@ -811,13 +731,13 @@ function Formulaire() {
           />
         )}
 
-        {/* Étape 4: Technologie */}
+        {/* Étape 4: Alimentation */}
         {currentStep === 4 && (
-          <Technologie 
-            formData={formData} 
-            setFormData={setFormData} 
-            validationErrors={validationErrors} 
-            setValidationErrors={setValidationErrors} 
+          <Alimentation
+            formData={formData}
+            setFormData={setFormData}
+            validationErrors={validationErrors}
+            setValidationErrors={setValidationErrors}
           />
         )}
 
