@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 import LoadingSpinner from '../components/LoadingSpinner'
 import Badge from '../components/Badge'
 import InformationsGenerales from '../components/form/InformationsGenerales'
-import LogementTransport from '../components/form/LogementTransport'
+import TransportConsommation from '../components/form/TransportConsommation'
 import BudgetEau from '../components/form/BudgetEau'
 import Alimentation from '../components/form/Alimentation'
 import HygieneVetements from '../components/form/HygieneVetements'
@@ -27,7 +27,7 @@ function Formulaire() {
 
   const stepTitles = [
     'Informations générales',
-    'Logement & Transport',
+    'Transport & Consommation',
     'Budget & Eau',
     'Alimentation',
     'Hygiène & Vêtements',
@@ -73,30 +73,18 @@ function Formulaire() {
     residence_principale: '',
     loyer_mensuel: '',
     source_financement: [],
-    // Étape 1: Logement & Transport
-    habite_cur_vontovorona: false,
-    type_logement_cur: '',
-    nombre_coloc: '',
-    type_location: '',
-    nombre_personnes_location: '',
-    region: '',
-    district: '',
-    commune: '',
-    ville: '',
-    quartier: '',
-    venant_antananarivo: false,
-    famille_antananarivo: false,
-    habite_chez_famille_ville: false,
-    famille_district: '',
-    famille_commune: '',
-    famille_ville: '',
-    famille_quartier: '',
-    transport: [],
+    
+    // Étape 2: Transport & Consommation
+    transport_principal: '',
     autre_transport: '',
-    jours_cur_semaine: '',
-    jours_maison_semaine: '',
-    allers_retours_semaine: '',
-    frequence_retour_origine: '',
+    combine_transports: '',
+    duree_trajet: '',
+    depense_transport_jour: '',
+    difficultes_transport: [],
+    led_utilise: '',
+    eteint_lumieres_debranche: '',
+    coupures_frequentes: '',
+    impact_coupures: '',
 
     // Étape 2: Alimentation
     alimentation: {
@@ -244,7 +232,7 @@ function Formulaire() {
     const errors = {}
     const stepsWithErrors = new Set()
 
-    // Informations générales : Q7 à Q9
+    // Informations générales
     if (!formData.residence_principale) {
       errors.residence_principale = 'Ce champ est obligatoire'
       stepsWithErrors.add(1)
@@ -260,87 +248,53 @@ function Formulaire() {
       stepsWithErrors.add(1)
     }
 
-    // Étape 1: Logement & Transport
-    // Logement
-    if (formData.habite_cur_vontovorona && !formData.type_logement_cur) {
-      errors.type_logement_cur = 'Ce champ est obligatoire'
-      stepsWithErrors.add(1)
-    }
-    if (formData.habite_cur_vontovorona && formData.type_logement_cur === 'colocation' && (formData.nombre_coloc === '' || formData.nombre_coloc < 0)) {
-      errors.nombre_coloc = 'Veuillez entrer un nombre positif'
-      stepsWithErrors.add(1)
-    }
-    if (formData.habite_cur_vontovorona && formData.type_logement_cur === 'location' && !formData.type_location) {
-      errors.type_location = 'Ce champ est obligatoire'
-      stepsWithErrors.add(1)
-    }
-    if (formData.habite_cur_vontovorona && formData.type_logement_cur === 'location' && formData.type_location === 'plusieurs' && (formData.nombre_personnes_location === '' || formData.nombre_personnes_location < 0)) {
-      errors.nombre_personnes_location = 'Veuillez entrer un nombre positif'
-      stepsWithErrors.add(1)
+    // Transport & Consommation
+    if (!formData.transport_principal) {
+      errors.transport_principal = 'Ce champ est obligatoire'
+      stepsWithErrors.add(2)
     }
 
-    // Origine
-    if (!formData.region) {
-      errors.region = 'Ce champ est obligatoire'
-      stepsWithErrors.add(1)
-    }
-    if (!formData.district) {
-      errors.district = 'Ce champ est obligatoire'
-      stepsWithErrors.add(1)
-    }
-    if (!formData.commune) {
-      errors.commune = 'Ce champ est obligatoire'
-      stepsWithErrors.add(1)
-    }
-    if (!formData.ville) {
-      errors.ville = 'Ce champ est obligatoire'
-      stepsWithErrors.add(1)
-    }
-    if (!formData.quartier) {
-      errors.quartier = 'Ce champ est obligatoire'
-      stepsWithErrors.add(1)
-    }
-    if (formData.venant_antananarivo === undefined) {
-      errors.venant_antananarivo = 'Ce champ est obligatoire'
-      stepsWithErrors.add(1)
-    }
-    if (formData.venant_antananarivo === false && formData.famille_antananarivo === undefined) {
-      errors.famille_antananarivo = 'Ce champ est obligatoire'
-      stepsWithErrors.add(1)
-    }
-    if (formData.venant_antananarivo === false && formData.famille_antananarivo === true && formData.habite_chez_famille_ville === undefined) {
-      errors.habite_chez_famille_ville = 'Ce champ est obligatoire'
-      stepsWithErrors.add(1)
-    }
-    if (formData.venant_antananarivo === false && formData.famille_antananarivo === true && formData.habite_chez_famille_ville === true && !formData.famille_quartier) {
-      errors.famille_habite = 'Veuillez remplir les informations sur le lieu de résidence de votre famille'
-      stepsWithErrors.add(1)
+    if (formData.transport_principal === 'autre' && !formData.autre_transport) {
+      errors.autre_transport = 'Veuillez préciser votre moyen de transport'
+      stepsWithErrors.add(2)
     }
 
-    // Transport
-    if (formData.transport.length === 0) {
-      errors.transport = 'Ce champ est obligatoire'
-      stepsWithErrors.add(1)
+    if (!formData.combine_transports) {
+      errors.combine_transports = 'Ce champ est obligatoire'
+      stepsWithErrors.add(2)
     }
-    if (formData.transport.includes('autre') && !formData.autre_transport) {
-      errors.autre_transport = 'Veuillez préciser'
-      stepsWithErrors.add(1)
+
+    if (!formData.duree_trajet) {
+      errors.duree_trajet = 'Ce champ est obligatoire'
+      stepsWithErrors.add(2)
     }
-    if (formData.jours_cur_semaine === '' || formData.jours_cur_semaine < 0 || formData.jours_cur_semaine > 7) {
-      errors.jours_cur_semaine = 'Veuillez entrer un nombre entre 0 et 7'
-      stepsWithErrors.add(1)
+
+    if (!formData.depense_transport_jour) {
+      errors.depense_transport_jour = 'Ce champ est obligatoire'
+      stepsWithErrors.add(2)
     }
-    if (formData.jours_maison_semaine === '' || formData.jours_maison_semaine < 0 || formData.jours_maison_semaine > 7) {
-      errors.jours_maison_semaine = 'Veuillez entrer un nombre entre 0 et 7'
-      stepsWithErrors.add(1)
+
+    if (
+      !formData.difficultes_transport ||
+      formData.difficultes_transport.length === 0
+    ) {
+      errors.difficultes_transport = 'Veuillez sélectionner au moins une difficulté'
+      stepsWithErrors.add(2)
     }
-    if (formData.allers_retours_semaine === '' || formData.allers_retours_semaine < 0) {
-      errors.allers_retours_semaine = 'Veuillez entrer un nombre positif'
-      stepsWithErrors.add(1)
+
+    if (!formData.led_utilise) {
+      errors.led_utilise = 'Ce champ est obligatoire'
+      stepsWithErrors.add(2)
     }
-    if (formData.frequence_retour_origine === '' || formData.frequence_retour_origine < 0) {
-      errors.frequence_retour_origine = 'Veuillez entrer un nombre positif'
-      stepsWithErrors.add(1)
+
+    if (!formData.eteint_lumieres_debranche) {
+      errors.eteint_lumieres_debranche = 'Ce champ est obligatoire'
+      stepsWithErrors.add(2)
+    }
+
+    if (!formData.coupures_frequentes) {
+      errors.coupures_frequentes = 'Ce champ est obligatoire'
+      stepsWithErrors.add(2)
     }
 
     // Étape 2: Alimentation
@@ -569,37 +523,21 @@ function Formulaire() {
         tranche_age,
         age_exact,
 
+        // Transport & Consommation
+        transport_principal: formData.transport_principal || null,
+        autre_transport: formData.transport_principal === 'autre'
+          ? formData.autre_transport || null
+          : null,
+        combine_transports: formData.combine_transports || null,
+        duree_trajet: formData.duree_trajet || null,
+        depense_transport_jour: formData.depense_transport_jour || null,
+        difficultes_transport: formData.difficultes_transport || [],
+        led_utilise: formData.led_utilise || null,
+        eteint_lumieres_debranche: formData.eteint_lumieres_debranche || null,
+        coupures_frequentes: formData.coupures_frequentes || null,
+        impact_coupures: formData.impact_coupures || null,
+
         
-        habite_cur_vontovorona: formData.habite_cur_vontovorona,
-        ...(formData.habite_cur_vontovorona && {
-          type_logement_cur: formData.type_logement_cur,
-          ...(formData.type_logement_cur === 'colocation' && { nombre_coloc: parseInt(formData.nombre_coloc) }),
-          ...(formData.type_logement_cur === 'location' && {
-            type_location: formData.type_location,
-            ...(formData.type_location === 'plusieurs' && { nombre_personnes_location: parseInt(formData.nombre_personnes_location) })
-          })
-        }),
-        region: formData.region,
-        district: formData.district,
-        commune: formData.commune,
-        ville: formData.ville,
-        quartier: formData.quartier,
-        venant_antananarivo: formData.venant_antananarivo,
-        ...(formData.venant_antananarivo === false && {
-          famille_antananarivo: formData.famille_antananarivo,
-          ...(formData.famille_antananarivo === true && { habite_chez_famille_ville: formData.habite_chez_famille_ville }),
-          ...(formData.famille_antananarivo === true && formData.habite_chez_famille_ville === true && {
-            famille_district: formData.famille_district,
-            famille_commune: formData.famille_commune,
-            famille_ville: formData.famille_ville,
-            famille_quartier: formData.famille_quartier
-          })
-        }),
-        transport: formData.transport.map(t => t === 'autre' ? formData.autre_transport : t),
-        jours_cur_semaine: parseInt(formData.jours_cur_semaine),
-        jours_maison_semaine: parseInt(formData.jours_maison_semaine),
-        allers_retours_semaine: parseInt(formData.allers_retours_semaine),
-        frequence_retour_origine: parseInt(formData.frequence_retour_origine),
         alimentation: formData.alimentation ? {
           ...formData.alimentation,
           moyen_cuisson: formData.alimentation.moyen_cuisson,
@@ -807,13 +745,13 @@ function Formulaire() {
           />
         )}
 
-        {/* Étape 2: Alimentation */}
+        {/* Étape 2: Transport & Consommation */}
         {currentStep === 2 && (
-          <Alimentation 
-            formData={formData} 
-            setFormData={setFormData} 
-            validationErrors={validationErrors} 
-            setValidationErrors={setValidationErrors} 
+          <TransportConsommation
+            formData={formData}
+            setFormData={setFormData}
+            validationErrors={validationErrors}
+            setValidationErrors={setValidationErrors}
           />
         )}
 
