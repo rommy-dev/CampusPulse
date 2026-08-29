@@ -51,7 +51,7 @@ function Formulaire() {
       : age
 
     // Calculate age range
-    let tranche_age = ''
+    let tranche_age
     if (ageExact < 18) {
       tranche_age = 'moins_18'
     } else if (ageExact >= 18 && ageExact <= 22) {
@@ -152,32 +152,32 @@ function Formulaire() {
   })
 
   useEffect(() => {
+    async function checkUserAndResponse() {
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        if (userError) throw userError
+        setUser(user)
+
+        const { data: existingResponse, error: responseError } = await supabase
+          .from('responses')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        if (responseError && responseError.code !== 'PGRST116') throw responseError
+
+        if (existingResponse) {
+          setAlreadyResponded(true)
+        }
+      } catch {
+        setError('Erreur lors du chargement. Veuillez vous reconnecter.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
     checkUserAndResponse()
   }, [])
-
-  const checkUserAndResponse = async () => {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError) throw userError
-      setUser(user)
-
-      const { data: existingResponse, error: responseError } = await supabase
-        .from('responses')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle()
-
-      if (responseError && responseError.code !== 'PGRST116') throw responseError
-
-      if (existingResponse) {
-        setAlreadyResponded(true)
-      }
-    } catch {
-      setError('Erreur lors du chargement. Veuillez vous reconnecter.')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const validateForm = () => {
     const errors = {}
