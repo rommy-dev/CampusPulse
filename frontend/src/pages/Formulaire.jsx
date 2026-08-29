@@ -10,7 +10,7 @@ import Alimentation from '../components/form/Alimentation'
 import CycleVetements from '../components/form/CycleVetements'
 import Hygiene from '../components/form/Hygiene'
 import Technologie from '../components/form/Technologie'
-import ModeDeVie from '../components/form/ModeDeVie'
+import Dechets from '../components/form/Dechets'
 
 function Formulaire() {
   const [user, setUser] = useState(null)
@@ -32,7 +32,7 @@ function Formulaire() {
     'Technologie',
     'Cycle de vie des vêtements',
     'Hygiene',
-    'Mode de vie'
+    'Production de déchets'
   ]
 
   const calculateAgeInfo = useCallback((dateNaissance) => {
@@ -132,6 +132,16 @@ function Formulaire() {
     procedes_locaux_durables: null,
     favorable_ateliers_ecologiques: null,
     contribution_formation_environnement: '',
+
+    // Étape 8: Dechets
+    types_dechets_produits: [],
+    utilise_contenants_reutilisables: '',
+    pratique_tri_selectif: '',
+    revend_bouteilles_metaux_collecteurs: null,
+    lieu_elimination_dechets: '',
+    connait_toxicite_combustion_plastiques: null,
+    poubelles_suffisantes_campus: '',
+    pret_a_participer_actions_environnementales: '',
   })
 
   useEffect(() => {
@@ -454,6 +464,52 @@ function Formulaire() {
         'Veuillez sélectionner une réponse.'
     }
 
+    // Étape 8: Déchets
+    if (currentStep === 8) {
+      if (
+        !formData.types_dechets_produits ||
+        formData.types_dechets_produits.length === 0
+      ) {
+        errors.types_dechets_produits =
+          'Veuillez sélectionner au moins un type de déchet.'
+      }
+
+      if (!formData.utilise_contenants_reutilisables) {
+        errors.utilise_contenants_reutilisables =
+          'Veuillez sélectionner une réponse.'
+      }
+
+      if (!formData.pratique_tri_selectif) {
+        errors.pratique_tri_selectif =
+          'Veuillez sélectionner une réponse.'
+      }
+
+      if (formData.revend_bouteilles_metaux_collecteurs === null) {
+        errors.revend_bouteilles_metaux_collecteurs =
+          'Veuillez sélectionner une réponse.'
+      }
+
+      if (!formData.lieu_elimination_dechets) {
+        errors.lieu_elimination_dechets =
+          'Veuillez sélectionner une réponse.'
+      }
+
+      if (formData.connait_toxicite_combustion_plastiques === null) {
+        errors.connait_toxicite_combustion_plastiques =
+          'Veuillez sélectionner une réponse.'
+      }
+
+      if (!formData.poubelles_suffisantes_campus) {
+        errors.poubelles_suffisantes_campus =
+          'Veuillez sélectionner une réponse.'
+      }
+
+      if (!formData.pret_a_participer_actions_environnementales) {
+        errors.pret_a_participer_actions_environnementales =
+          'Veuillez sélectionner une réponse.'
+      }
+    }
+
     setValidationErrors(errors)
     setStepValidationErrors(Array.from(stepsWithErrors).sort())
     return Object.keys(errors).length === 0
@@ -568,6 +624,23 @@ function Formulaire() {
         procedes_locaux_durables: formData.procedes_locaux_durables,
         favorable_ateliers_ecologiques: formData.favorable_ateliers_ecologiques,
         contribution_formation_environnement: formData.contribution_formation_environnement,
+
+        // Dechets
+        types_dechets_produits: formData.types_dechets_produits,
+        utilise_contenants_reutilisables:
+          formData.utilise_contenants_reutilisables,
+        pratique_tri_selectif:
+          formData.pratique_tri_selectif,
+        revend_bouteilles_metaux_collecteurs:
+          formData.revend_bouteilles_metaux_collecteurs,
+        lieu_elimination_dechets:
+          formData.lieu_elimination_dechets,
+        connait_toxicite_combustion_plastiques:
+          formData.connait_toxicite_combustion_plastiques,
+        poubelles_suffisantes_campus:
+          formData.poubelles_suffisantes_campus,
+        pret_a_participer_actions_environnementales:
+          formData.pret_a_participer_actions_environnementales,
       }
 
       const { error: insertError } = await supabase
@@ -743,6 +816,7 @@ function Formulaire() {
           />
         )}
 
+        {/* Étape 6: Cycle de vie des vêtements */}
         {currentStep === 6 && (
           <CycleVetements
             formData={formData}
@@ -752,8 +826,19 @@ function Formulaire() {
           />
         )}
 
+        {/* Étape 7: Hygiene */}
         {currentStep === 7 && (
           <Hygiene
+            formData={formData}
+            setFormData={setFormData}
+            validationErrors={validationErrors}
+            setValidationErrors={setValidationErrors}
+          />
+        )}
+
+        {/* Étape 8: Dechets */}
+        {currentStep === 8 && (
+          <Dechets
             formData={formData}
             setFormData={setFormData}
             validationErrors={validationErrors}
