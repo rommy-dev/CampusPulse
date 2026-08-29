@@ -11,6 +11,7 @@ import CycleVetements from '../components/form/CycleVetements'
 import Hygiene from '../components/form/Hygiene'
 import Technologie from '../components/form/Technologie'
 import Dechets from '../components/form/Dechets'
+import PerceptionCampus from '../components/form/PerceptionCampus'
 
 function Formulaire() {
   const [user, setUser] = useState(null)
@@ -32,7 +33,8 @@ function Formulaire() {
     'Technologie',
     'Cycle de vie des vêtements',
     'Hygiene',
-    'Production de déchets'
+    'Production de déchets',
+    'Perception et attentes pour le campus'
   ]
 
   const calculateAgeInfo = useCallback((dateNaissance) => {
@@ -142,6 +144,11 @@ function Formulaire() {
     connait_toxicite_combustion_plastiques: null,
     poubelles_suffisantes_campus: '',
     pret_a_participer_actions_environnementales: '',
+
+    // Étape 9: Perception et attentes pour le campus
+    perception_urgence_dechets: '',
+    suggestions_amelioration_campus: '',
+
   })
 
   useEffect(() => {
@@ -508,6 +515,15 @@ function Formulaire() {
         errors.pret_a_participer_actions_environnementales =
           'Veuillez sélectionner une réponse.'
       }
+
+      // Étape 9: Perception et attentes pour le campus
+      if (!formData.perception_urgence_dechets) { 
+        errors.perception_urgence_dechets = 'Veuillez sélectionner une réponse.' 
+      } 
+      
+      if (!formData.suggestions_amelioration_campus?.trim()) { 
+        errors.suggestions_amelioration_campus = 'Veuillez renseigner votre réponse.' 
+      }
     }
 
     setValidationErrors(errors)
@@ -641,6 +657,10 @@ function Formulaire() {
           formData.poubelles_suffisantes_campus,
         pret_a_participer_actions_environnementales:
           formData.pret_a_participer_actions_environnementales,
+
+        // Perception et attentes pour le campus
+        perception_urgence_dechets: formData.perception_urgence_dechets,
+        suggestions_amelioration_campus: formData.suggestions_amelioration_campus?.trim() || null,
       }
 
       const { error: insertError } = await supabase
@@ -733,9 +753,9 @@ function Formulaire() {
 
       {/* Progress indicator */}
       <div className="mb-6">
-        <div className="flex items-center md:grid md:grid-cols-4 md:gap-2">
+        <div className="flex items-center flex-wrap gap-2 md:grid md:grid-cols-3 md:gap-2">
           {stepTitles.map((title, index) => (
-            <div key={index} className="flex flex-col items-start flex-1">
+            <div key={index} className="flex flex-col items-start">
               <div 
                 onClick={() => goToStep(index + 1)}
                 className={`flex items-center gap-2 border-b-2 pb-1 mb-1 cursor-pointer ${
@@ -846,8 +866,18 @@ function Formulaire() {
           />
         )}
 
+        {/* Étape 9: Perception et attentes pour le campus */}
+        {currentStep === 9 && (
+          <PerceptionCampus
+            formData={formData}
+            setFormData={setFormData}
+            validationErrors={validationErrors}
+            setValidationErrors={setValidationErrors}
+          />
+        )}
+
         {/* Validation error badge for step 5 */}
-        {currentStep === 6 && stepValidationErrors.length > 0 && (
+        {currentStep === 9 && stepValidationErrors.length > 0 && (
           <div className="bg-surface rounded-lg shadow-sm border border-text-secondary/10 p-4 md:p-6">
             <Badge 
               type="error" 
