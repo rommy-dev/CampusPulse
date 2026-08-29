@@ -21,214 +21,264 @@ function Technologie({ formData, setFormData, validationErrors, setValidationErr
 
   return (
     <div className="space-y-6">
-      <div className="bg-surface rounded-lg shadow-sm border border-text-secondary/10 p-4 md:p-6">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">Téléphone</h2>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-text-secondary mb-2">Marque de votre téléphone</label>
-            <input
-              type="text"
-              value={formData.telephone_marque}
-              onChange={(e) => {
-                setFormData(prev => ({ ...prev, telephone_marque: e.target.value }))
-                if (validationErrors.telephone_marque) setValidationErrors(prev => ({ ...prev, telephone_marque: null }))
-              }}
-              placeholder="Ex: Samsung A14"
-              className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            {validationErrors.telephone_marque && <p className="text-danger text-sm mt-1">{validationErrors.telephone_marque}</p>}
-          </div>
-          <div>
-            <label className="block text-text-secondary mb-2">Nombre de recharges par jour</label>
-            <input
-              type="number"
-              min="0"
-              value={formData.recharge_telephone_jour}
-              onChange={(e) => {
-                setFormData(prev => ({ ...prev, recharge_telephone_jour: e.target.value }))
-                if (validationErrors.recharge_telephone_jour) setValidationErrors(prev => ({ ...prev, recharge_telephone_jour: null }))
-              }}
-              className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            {validationErrors.recharge_telephone_jour && <p className="text-danger text-sm mt-1">{validationErrors.recharge_telephone_jour}</p>}
-          </div>
-          <div>
-            <label className="block text-text-secondary mb-2">Nombre d'heures d'écran par jour</label>
-            <input
-              type="number"
-              min="0"
-              step="0.5"
-              value={formData.ecrans_tel_heures_jour}
-              onChange={(e) => {
-                setFormData(prev => ({ ...prev, ecrans_tel_heures_jour: e.target.value }))
-                if (validationErrors.ecrans_tel_heures_jour) setValidationErrors(prev => ({ ...prev, ecrans_tel_heures_jour: null }))
-              }}
-              placeholder="Ex: 4.5"
-              className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            {validationErrors.ecrans_tel_heures_jour && <p className="text-danger text-sm mt-1">{validationErrors.ecrans_tel_heures_jour}</p>}
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-surface rounded-lg shadow-sm border border-text-secondary/10 p-4 md:p-6">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">Ordinateur</h2>
-        <label className="flex items-center gap-3 cursor-pointer mb-4">
-          <input
-            type="checkbox"
-            checked={formData.pc_possede}
-            onChange={(e) => setFormData(prev => ({ ...prev, pc_possede: e.target.checked }))}
-            className="w-4 h-4 text-primary"
-          />
-          <span className="text-text-primary">Je possède un PC</span>
+      <div>
+        <label className="block text-text-secondary mb-2">
+          Quels équipements numériques possédez-vous et utilisez-vous pour vos études (ex: Aspen Plus, Python, DAO) ?
         </label>
-        {formData.pc_possede && (
-          <div className="ml-7 space-y-4">
-            <div>
-              <label className="block text-text-secondary mb-2">Nombre de PC</label>
+
+        <div className="space-y-2">
+          {[
+            { value: 'smartphone_personnel', label: 'Smartphone personnel' },
+            { value: 'ordinateur_portable_fixe', label: 'Ordinateur portable / fixe' },
+            { value: 'tablette_tactile', label: 'Tablette tactile' },
+            { value: 'aucun_equipement_personnel', label: 'Aucun équipement personnel' }
+          ].map(option => (
+            <label key={option.value} className="flex items-center gap-3 cursor-pointer">
               <input
-                type="number"
-                min="0"
-                value={formData.pc_nombre}
-                onChange={(e) => {
-                  setFormData(prev => ({ ...prev, pc_nombre: e.target.value }))
-                  if (validationErrors.pc_nombre) setValidationErrors(prev => ({ ...prev, pc_nombre: null }))
-                }}
-                className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                type="checkbox"
+                checked={formData.equipements_numeriques.includes(option.value)}
+                onChange={() => handleCheckboxChange('equipements_numeriques', option.value)}
+                className="w-4 h-4 text-primary"
               />
-              {validationErrors.pc_nombre && <p className="text-danger text-sm mt-1">{validationErrors.pc_nombre}</p>}
-            </div>
-            <div>
-              <label className="block text-text-secondary mb-2">Usage (choisissez toutes les options)</label>
-              <div className="space-y-2">
-                {pcUsageOptions.map(option => (
-                  <label key={option.value} className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.pc_usage.includes(option.value)}
-                      onChange={() => handleCheckboxChange('pc_usage', option.value)}
-                      className="w-4 h-4 text-primary"
-                    />
-                    <span className="text-text-primary">{option.label}</span>
-                  </label>
-                ))}
-              </div>
-              {validationErrors.pc_usage && <p className="text-danger text-sm mt-2">{validationErrors.pc_usage}</p>}
-              {formData.pc_usage.includes('autre') && (
-                <div className="mt-4">
-                  <input
-                    type="text"
-                    placeholder="Précisez l'usage"
-                    value={formData.autre_pc_usage}
-                    onChange={(e) => {
-                      setFormData(prev => ({ ...prev, autre_pc_usage: e.target.value }))
-                      if (validationErrors.autre_pc_usage) setValidationErrors(prev => ({ ...prev, autre_pc_usage: null }))
-                    }}
-                    className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                  {validationErrors.autre_pc_usage && <p className="text-danger text-sm mt-1">{validationErrors.autre_pc_usage}</p>}
-                </div>
-              )}
-            </div>
-            <div>
-              <label className="block text-text-secondary mb-2">Fréquence de recharge par jour</label>
-              <input
-                type="number"
-                min="0"
-                value={formData.recharge_pc_frequence}
-                onChange={(e) => {
-                  setFormData(prev => ({ ...prev, recharge_pc_frequence: e.target.value }))
-                  if (validationErrors.recharge_pc_frequence) setValidationErrors(prev => ({ ...prev, recharge_pc_frequence: null }))
-                }}
-                className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              {validationErrors.recharge_pc_frequence && <p className="text-danger text-sm mt-1">{validationErrors.recharge_pc_frequence}</p>}
-            </div>
-            <div>
-              <label className="block text-text-secondary mb-2">Nombre d'heures d'écran par jour</label>
-              <input
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.ecrans_pc_heures_jour}
-                onChange={(e) => {
-                  setFormData(prev => ({ ...prev, ecrans_pc_heures_jour: e.target.value }))
-                  if (validationErrors.ecrans_pc_heures_jour) setValidationErrors(prev => ({ ...prev, ecrans_pc_heures_jour: null }))
-                }}
-                placeholder="Ex: 6"
-                className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              {validationErrors.ecrans_pc_heures_jour && <p className="text-danger text-sm mt-1">{validationErrors.ecrans_pc_heures_jour}</p>}
-            </div>
-          </div>
+              <span className="text-text-primary">{option.label}</span>
+            </label>
+          ))}
+        </div>
+
+        {validationErrors.equipements_numeriques && (
+          <p className="text-danger text-sm mt-2">
+            {validationErrors.equipements_numeriques}
+          </p>
         )}
       </div>
-
-      <div className="bg-surface rounded-lg shadow-sm border border-text-secondary/10 p-4 md:p-6">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">Tablette</h2>
-        <label className="flex items-center gap-3 cursor-pointer mb-4">
-          <input
-            type="checkbox"
-            checked={formData.tablette_possede}
-            onChange={(e) => setFormData(prev => ({ ...prev, tablette_possede: e.target.checked }))}
-            className="w-4 h-4 text-primary"
-          />
-          <span className="text-text-primary">Je possède une tablette</span>
+      <div>
+        <label className="block text-text-secondary mb-2">
+          Depuis combien de temps utilisez-vous votre smartphone ou ordinateur principal avant son remplacement ?
         </label>
-        {formData.tablette_possede && (
-          <div className="ml-7 space-y-4">
-            <div>
-              <label className="block text-text-secondary mb-2">Nombre de tablettes</label>
+
+        <div className="space-y-2">
+          {[
+            { value: 'moins_2_ans', label: 'Moins de 2 ans' },
+            { value: '2_4_ans', label: '2 à 4 ans' },
+            { value: '5_ans_plus', label: '5 ans et plus' },
+            { value: 'panne_totale_irreparable', label: "Jusqu'à panne totale / irréparable" }
+          ].map(option => (
+            <label key={option.value} className="flex items-center gap-3 cursor-pointer">
               <input
-                type="number"
-                min="0"
-                value={formData.tablette_nombre}
+                type="radio"
+                name="duree_utilisation_appareil"
+                value={option.value}
+                checked={formData.duree_utilisation_appareil === option.value}
                 onChange={(e) => {
-                  setFormData(prev => ({ ...prev, tablette_nombre: e.target.value }))
-                  if (validationErrors.tablette_nombre) setValidationErrors(prev => ({ ...prev, tablette_nombre: null }))
+                  setFormData(prev => ({
+                    ...prev,
+                    duree_utilisation_appareil: e.target.value
+                  }))
+
+                  if (validationErrors.duree_utilisation_appareil) {
+                    setValidationErrors(prev => ({
+                      ...prev,
+                      duree_utilisation_appareil: null
+                    }))
+                  }
                 }}
-                className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-4 h-4 text-primary"
               />
-              {validationErrors.tablette_nombre && <p className="text-danger text-sm mt-1">{validationErrors.tablette_nombre}</p>}
-            </div>
-            <div>
-              <label className="block text-text-secondary mb-2">Fréquence de recharge par jour</label>
-              <input
-                type="number"
-                min="0"
-                value={formData.recharge_tablette_frequence}
-                onChange={(e) => {
-                  setFormData(prev => ({ ...prev, recharge_tablette_frequence: e.target.value }))
-                  if (validationErrors.recharge_tablette_frequence) setValidationErrors(prev => ({ ...prev, recharge_tablette_frequence: null }))
-                }}
-                className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              {validationErrors.recharge_tablette_frequence && <p className="text-danger text-sm mt-1">{validationErrors.recharge_tablette_frequence}</p>}
-            </div>
-          </div>
+              <span className="text-text-primary">{option.label}</span>
+            </label>
+          ))}
+        </div>
+
+        {validationErrors.duree_utilisation_appareil && (
+          <p className="text-danger text-sm mt-2">
+            {validationErrors.duree_utilisation_appareil}
+          </p>
         )}
       </div>
+      <div>
+        <label className="block text-text-secondary mb-2">
+          Rechargez-vous vos appareils électroniques plusieurs fois par jour ou les laissez-vous branchés toute la nuit ?
+        </label>
 
-      <div className="bg-surface rounded-lg shadow-sm border border-text-secondary/10 p-4 md:p-6">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">Éclairage</h2>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-text-secondary mb-2">Combien d'heures par jour la lumière est-elle allumée chez vous ?</label>
-            <input
-              type="number"
-              min="0"
-              step="0.5"
-              value={formData.lumiere_heures_jour}
-              onChange={(e) => {
-                setFormData(prev => ({ ...prev, lumiere_heures_jour: e.target.value }))
-                if (validationErrors.lumiere_heures_jour) setValidationErrors(prev => ({ ...prev, lumiere_heures_jour: null }))
-              }}
-              placeholder="Ex: 6"
-              className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            {validationErrors.lumiere_heures_jour && <p className="text-danger text-sm mt-1">{validationErrors.lumiere_heures_jour}</p>}
-          </div>
+        <div className="space-y-2">
+          {[
+            { value: 'oui', label: 'Oui' },
+            { value: 'non', label: 'Non' }
+          ].map(option => (
+            <label key={option.value} className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="radio"
+                name="recharge_appareils_plusieurs_fois_nuit"
+                value={option.value}
+                checked={formData.recharge_appareils_plusieurs_fois_nuit === option.value}
+                onChange={(e) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    recharge_appareils_plusieurs_fois_nuit: e.target.value
+                  }))
+
+                  if (validationErrors.recharge_appareils_plusieurs_fois_nuit) {
+                    setValidationErrors(prev => ({
+                      ...prev,
+                      recharge_appareils_plusieurs_fois_nuit: null
+                    }))
+                  }
+                }}
+                className="w-4 h-4 text-primary"
+              />
+              <span className="text-text-primary">{option.label}</span>
+            </label>
+          ))}
         </div>
+
+        {validationErrors.recharge_appareils_plusieurs_fois_nuit && (
+          <p className="text-danger text-sm mt-2">
+            {validationErrors.recharge_appareils_plusieurs_fois_nuit}
+          </p>
+        )}
+      </div>
+      <div>
+        <label className="block text-text-secondary mb-2">
+          En cas de panne de vos appareils électroniques (téléphone, ordinateur, chargeur), quelle est votre réaction prioritaire ?
+        </label>
+
+        <div className="space-y-2">
+          {[
+            {
+              value: 'reparation_technicien_local',
+              label: "Je fais réparer l'appareil auprès d'un technicien local"
+            },
+            {
+              value: 'reparation_soi_meme',
+              label: 'Je répare par moi-même (si possible)'
+            },
+            {
+              value: 'rachat_appareil_neuf',
+              label: 'Je rachète un appareil neuf'
+            },
+            {
+              value: 'stockage_dormant',
+              label: "Je mets l'appareil de côté sans le réparer (stockage dormant)"
+            }
+          ].map(option => (
+            <label key={option.value} className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="radio"
+                name="reaction_panne_appareil"
+                value={option.value}
+                checked={formData.reaction_panne_appareil === option.value}
+                onChange={(e) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    reaction_panne_appareil: e.target.value
+                  }))
+
+                  if (validationErrors.reaction_panne_appareil) {
+                    setValidationErrors(prev => ({
+                      ...prev,
+                      reaction_panne_appareil: null
+                    }))
+                  }
+                }}
+                className="w-4 h-4 text-primary"
+              />
+              <span className="text-text-primary">{option.label}</span>
+            </label>
+          ))}
+        </div>
+
+        {validationErrors.reaction_panne_appareil && (
+          <p className="text-danger text-sm mt-2">
+            {validationErrors.reaction_panne_appareil}
+          </p>
+        )}
+      </div>
+      <div>
+        <label className="block text-text-secondary mb-2">
+          Comment éliminez-vous vos équipements électroniques ou accessoires obsolètes (batteries, câbles, chargeurs cassés) ?
+        </label>
+
+        <div className="space-y-2">
+          {[
+            {
+              value: 'conservation_chez_moi',
+              label: 'Je les conserve chez moi (tiroir / encombrants)'
+            },
+            {
+              value: 'poubelle_ordinaire',
+              label: 'Je les jette dans la poubelle ordinaire / ménagère'
+            },
+            {
+              value: 'filiere_collecte_recyclage',
+              label: 'Je les confie à une filière de collecte spécialisée ou de recyclage / revente pour pièces'
+            },
+            {
+              value: 'revente',
+              label: 'Je les revends'
+            }
+          ].map(option => (
+            <label key={option.value} className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="radio"
+                name="elimination_equipements_electroniques"
+                value={option.value}
+                checked={formData.elimination_equipements_electroniques === option.value}
+                onChange={(e) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    elimination_equipements_electroniques: e.target.value
+                  }))
+
+                  if (validationErrors.elimination_equipements_electroniques) {
+                    setValidationErrors(prev => ({
+                      ...prev,
+                      elimination_equipements_electroniques: null
+                    }))
+                  }
+                }}
+                className="w-4 h-4 text-primary"
+              />
+              <span className="text-text-primary">{option.label}</span>
+            </label>
+          ))}
+        </div>
+
+        {validationErrors.elimination_equipements_electroniques && (
+          <p className="text-danger text-sm mt-2">
+            {validationErrors.elimination_equipements_electroniques}
+          </p>
+        )}
+      </div>
+      <div>
+        <label className="block text-text-secondary mb-2">
+          Quelles mesures d'écoconception logicielle ou matérielle mettriez-vous en avant pour réduire l'impact environnemental du numérique sur le campus ?
+        </label>
+
+        <textarea
+          value={formData.ecoconception_numerique_suggestion}
+          onChange={(e) => {
+            setFormData(prev => ({
+              ...prev,
+              ecoconception_numerique_suggestion: e.target.value
+            }))
+
+            if (validationErrors.ecoconception_numerique_suggestion) {
+              setValidationErrors(prev => ({
+                ...prev,
+                ecoconception_numerique_suggestion: null
+              }))
+            }
+          }}
+          rows={4}
+          placeholder="Votre réponse..."
+          className="w-full px-3 py-2 border border-text-secondary/20 rounded-md bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+
+        {validationErrors.ecoconception_numerique_suggestion && (
+          <p className="text-danger text-sm mt-1">
+            {validationErrors.ecoconception_numerique_suggestion}
+          </p>
+        )}
       </div>
     </div>
   )

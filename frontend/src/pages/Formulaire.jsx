@@ -30,9 +30,9 @@ function Formulaire() {
     'Transport & Consommation',
     'Budget & Eau',
     'Alimentation',
+    'Technologie',
     'Hygiène & Vêtements',
     'Chimie verte',
-    'Technologie',
     'Mode de vie'
   ]
 
@@ -123,20 +123,13 @@ function Formulaire() {
     brushing_utilise: false,
     lisseur_utilise: false,
 
-    // Étape 4: Technologie
-    telephone_marque: '',
-    recharge_telephone_jour: '',
-    ecrans_tel_heures_jour: '',
-    pc_possede: false,
-    pc_nombre: '',
-    pc_usage: [],
-    autre_pc_usage: '',
-    recharge_pc_frequence: '',
-    ecrans_pc_heures_jour: '',
-    tablette_possede: false,
-    tablette_nombre: '',
-    recharge_tablette_frequence: '',
-    lumiere_heures_jour: '',
+    // Étape 5: Outils numériques et cycle de vie du matériel
+    equipements_numeriques: [],
+    duree_utilisation_appareil: '',
+    recharge_appareils_plusieurs_fois_nuit: '',
+    reaction_panne_appareil: '',
+    elimination_equipements_electroniques: '',
+    ecoconception_numerique_suggestion: '',    
 
     // Étape 5: Mode de vie
     alcool_boit: false,
@@ -180,7 +173,7 @@ function Formulaire() {
     const errors = {}
     const stepsWithErrors = new Set()
 
-    // Informations générales
+    // Étape 1: Informations générales
     if (!formData.residence_principale) {
       errors.residence_principale = 'Ce champ est obligatoire'
       stepsWithErrors.add(1)
@@ -196,7 +189,7 @@ function Formulaire() {
       stepsWithErrors.add(1)
     }
 
-    // Transport & Consommation
+    // Étape 2: Transport & Consommation
     if (!formData.transport_principal) {
       errors.transport_principal = 'Ce champ est obligatoire'
       stepsWithErrors.add(2)
@@ -245,7 +238,7 @@ function Formulaire() {
       stepsWithErrors.add(2)
     }
 
-    // Budget & Eau
+    // Étape 3: Budget & Eau
     if (!formData.budget_mensuel_total) {
       errors.budget_mensuel_total = 'Ce champ est obligatoire'
       stepsWithErrors.add(3)
@@ -278,7 +271,7 @@ function Formulaire() {
       stepsWithErrors.add(3)
     }
 
-     // Alimentation
+     // Étape 4: Alimentation
     if (!formData.nombre_repas_jour) {
       errors.nombre_repas_jour = 'Ce champ est obligatoire'
       stepsWithErrors.add(4)
@@ -346,6 +339,52 @@ function Formulaire() {
       stepsWithErrors.add(4)
     }
 
+    // Étape 5: Outils numériques et cycle de vie du matériel
+    if (
+      !formData.equipements_numeriques ||
+      formData.equipements_numeriques.length === 0
+    ) {
+      errors.equipements_numeriques =
+        'Veuillez sélectionner au moins un équipement'
+      stepsWithErrors.add(5)
+    }
+
+    if (
+      formData.equipements_numeriques.includes('aucun_equipement_personnel') &&
+      formData.equipements_numeriques.length > 1
+    ) {
+      errors.equipements_numeriques =
+        'Si vous ne possédez aucun équipement personnel, aucune autre option ne doit être sélectionnée'
+      stepsWithErrors.add(5)
+    }
+
+    if (!formData.duree_utilisation_appareil) {
+      errors.duree_utilisation_appareil = 'Ce champ est obligatoire'
+      stepsWithErrors.add(5)
+    }
+
+    if (!formData.recharge_appareils_plusieurs_fois_nuit) {
+      errors.recharge_appareils_plusieurs_fois_nuit =
+        'Ce champ est obligatoire'
+      stepsWithErrors.add(5)
+    }
+
+    if (!formData.reaction_panne_appareil) {
+      errors.reaction_panne_appareil = 'Ce champ est obligatoire'
+      stepsWithErrors.add(5)
+    }
+
+    if (!formData.elimination_equipements_electroniques) {
+      errors.elimination_equipements_electroniques =
+        'Ce champ est obligatoire'
+      stepsWithErrors.add(5)
+    }
+
+    if (!formData.ecoconception_numerique_suggestion?.trim()) {
+      errors.ecoconception_numerique_suggestion =
+        'Ce champ est obligatoire'
+      stepsWithErrors.add(5)
+    }
     // Étape 3: Hygiène & Vêtements
     if (!formData.type_hygiene || formData.type_hygiene.length === 0) {
       errors.type_hygiene = 'Ce champ est obligatoire'
@@ -384,56 +423,6 @@ function Formulaire() {
     if (formData.repassage_frequence_semaine !== '' && formData.repassage_frequence_semaine < 0) {
       errors.repassage_frequence_semaine = 'Veuillez entrer un nombre positif'
       stepsWithErrors.add(3)
-    }
-
-    // Étape 4: Technologie
-    if (!formData.telephone_marque) {
-      errors.telephone_marque = 'Ce champ est obligatoire'
-      stepsWithErrors.add(4)
-    }
-    if (formData.recharge_telephone_jour === '' || formData.recharge_telephone_jour < 0) {
-      errors.recharge_telephone_jour = 'Veuillez entrer un nombre positif'
-      stepsWithErrors.add(4)
-    }
-    if (formData.ecrans_tel_heures_jour === '' || formData.ecrans_tel_heures_jour < 0) {
-      errors.ecrans_tel_heures_jour = 'Veuillez entrer un nombre positif'
-      stepsWithErrors.add(4)
-    }
-    if (formData.pc_possede) {
-      if (formData.pc_nombre === '' || formData.pc_nombre < 0) {
-        errors.pc_nombre = 'Veuillez entrer un nombre positif'
-        stepsWithErrors.add(4)
-      }
-      if (formData.pc_usage.length === 0) {
-        errors.pc_usage = 'Ce champ est obligatoire'
-        stepsWithErrors.add(4)
-      }
-      if (formData.pc_usage.includes('autre') && !formData.autre_pc_usage) {
-        errors.autre_pc_usage = 'Veuillez préciser'
-        stepsWithErrors.add(4)
-      }
-      if (formData.recharge_pc_frequence === '' || formData.recharge_pc_frequence < 0) {
-        errors.recharge_pc_frequence = 'Veuillez entrer un nombre positif'
-        stepsWithErrors.add(4)
-      }
-      if (formData.ecrans_pc_heures_jour === '' || formData.ecrans_pc_heures_jour < 0) {
-        errors.ecrans_pc_heures_jour = 'Veuillez entrer un nombre positif'
-        stepsWithErrors.add(4)
-      }
-    }
-    if (formData.tablette_possede) {
-      if (formData.tablette_nombre === '' || formData.tablette_nombre < 0) {
-        errors.tablette_nombre = 'Veuillez entrer un nombre positif'
-        stepsWithErrors.add(4)
-      }
-      if (formData.recharge_tablette_frequence === '' || formData.recharge_tablette_frequence < 0) {
-        errors.recharge_tablette_frequence = 'Veuillez entrer un nombre positif'
-        stepsWithErrors.add(4)
-      }
-    }
-    if (formData.lumiere_heures_jour === '' || formData.lumiere_heures_jour < 0) {
-      errors.lumiere_heures_jour = 'Veuillez entrer un nombre positif'
-      stepsWithErrors.add(4)
     }
 
     // Étape 5: Mode de vie
@@ -537,6 +526,19 @@ function Formulaire() {
         impact_chaine_approvisionnement:
           formData.impact_chaine_approvisionnement || null,
 
+        // Outils numériques et cycle de vie du matériel
+        equipements_numeriques: formData.equipements_numeriques || [],
+        duree_utilisation_appareil:
+          formData.duree_utilisation_appareil || null,
+        recharge_appareils_plusieurs_fois_nuit:
+          formData.recharge_appareils_plusieurs_fois_nuit || null,
+        reaction_panne_appareil:
+          formData.reaction_panne_appareil || null,
+        elimination_equipements_electroniques:
+          formData.elimination_equipements_electroniques || null,
+        ecoconception_numerique_suggestion:
+          formData.ecoconception_numerique_suggestion?.trim() || null,
+
         type_hygiene: formData.type_hygiene,
         hygiene_frequence_jour: parseInt(formData.hygiene_frequence_jour),
         hygiene_frequence_semaine: parseInt(formData.hygiene_frequence_semaine),
@@ -553,22 +555,7 @@ function Formulaire() {
         ...(formData.repassage_frequence_semaine !== '' && { repassage_frequence_semaine: parseInt(formData.repassage_frequence_semaine) }),
         brushing_utilise: formData.brushing_utilise,
         lisseur_utilise: formData.lisseur_utilise,
-        telephone_marque: formData.telephone_marque,
-        recharge_telephone_jour: parseInt(formData.recharge_telephone_jour),
-        ecrans_tel_heures_jour: parseFloat(formData.ecrans_tel_heures_jour),
-        pc_possede: formData.pc_possede,
-        ...(formData.pc_possede && {
-          pc_nombre: parseInt(formData.pc_nombre),
-          pc_usage: formData.pc_usage.map(u => u === 'autre' ? formData.autre_pc_usage : u),
-          recharge_pc_frequence: parseInt(formData.recharge_pc_frequence),
-          ecrans_pc_heures_jour: parseFloat(formData.ecrans_pc_heures_jour)
-        }),
-        tablette_possede: formData.tablette_possede,
-        ...(formData.tablette_possede && {
-          tablette_nombre: parseInt(formData.tablette_nombre),
-          recharge_tablette_frequence: parseInt(formData.recharge_tablette_frequence)
-        }),
-        lumiere_heures_jour: parseFloat(formData.lumiere_heures_jour),
+        
         alcool_boit: formData.alcool_boit,
         type_dechet: formData.type_dechet,
         ordures_frequence_semaine: parseInt(formData.ordures_frequence_semaine),
@@ -741,13 +728,13 @@ function Formulaire() {
           />
         )}
 
-        {/* Étape 5: Mode de vie */}
+        {/* Étape 5: Outils numériques et cycle de vie du matériel */}
         {currentStep === 5 && (
-          <ModeDeVie 
-            formData={formData} 
-            setFormData={setFormData} 
-            validationErrors={validationErrors} 
-            setValidationErrors={setValidationErrors} 
+          <Technologie
+            formData={formData}
+            setFormData={setFormData}
+            validationErrors={validationErrors}
+            setValidationErrors={setValidationErrors}
           />
         )}
 
