@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabaseClient'
 import { LogOut } from 'lucide-react'
 import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'

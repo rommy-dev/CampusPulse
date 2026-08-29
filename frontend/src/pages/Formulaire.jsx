@@ -23,7 +23,6 @@ function Formulaire() {
   const [validationErrors, setValidationErrors] = useState({})
   const [stepValidationErrors, setStepValidationErrors] = useState([])
   const [currentStep, setCurrentStep] = useState(1)
-  const totalSteps = 8
 
   const stepTitles = [
     'Informations générales',
@@ -36,6 +35,7 @@ function Formulaire() {
     'Production de déchets',
     'Perception et attentes pour le campus'
   ]
+  const totalSteps = stepTitles.length
 
   const calculateAgeInfo = useCallback((dateNaissance) => {
     if (!dateNaissance) return { tranche_age: '', age_exact: '' }
@@ -121,7 +121,7 @@ function Formulaire() {
     frequence_renouvellement_vetements: '',
     origine_achat_vetements: '',
     possede_fibres_naturelles_locales: null,
-    lessive_frequence_methode: '',
+    methode_lavage_vetements: '',
     lessive_ecologique_utilisee: null,
     sechage_exterieur: null,
     repare_vetements: null,
@@ -417,8 +417,8 @@ function Formulaire() {
         'Veuillez répondre à cette question.'
     }
 
-    if (!formData.lessive_frequence_methode) {
-      errors.lessive_frequence_methode =
+    if (!formData.methode_lavage_vetements) {
+      errors.methode_lavage_vetements =
         'Veuillez sélectionner votre méthode de lavage.'
     }
 
@@ -472,7 +472,7 @@ function Formulaire() {
     }
 
     // Étape 8: Déchets
-    if (currentStep === 8) {
+    if (currentStep === totalSteps) {
       if (
         !formData.types_dechets_produits ||
         formData.types_dechets_produits.length === 0
@@ -526,6 +526,38 @@ function Formulaire() {
       }
     }
 
+    const errorStepByField = {
+      nombre_tenues_semaine: 6,
+      frequence_renouvellement_vetements: 6,
+      origine_achat_vetements: 6,
+      possede_fibres_naturelles_locales: 6,
+      methode_lavage_vetements: 6,
+      lessive_ecologique_utilisee: 6,
+      sechage_exterieur: 6,
+      repare_vetements: 6,
+      devenir_vetements_usages: 6,
+      produits_chimiques_utilises: 7,
+      lit_etiquettes_produits: 7,
+      connait_principes_chimie_verte: 7,
+      procedes_locaux_durables: 7,
+      favorable_ateliers_ecologiques: 7,
+      types_dechets_produits: 8,
+      utilise_contenants_reutilisables: 8,
+      pratique_tri_selectif: 8,
+      revend_bouteilles_metaux_collecteurs: 8,
+      lieu_elimination_dechets: 8,
+      connait_toxicite_combustion_plastiques: 8,
+      poubelles_suffisantes_campus: 8,
+      pret_a_participer_actions_environnementales: 8,
+      perception_urgence_dechets: 9,
+      suggestions_amelioration_campus: 9,
+    }
+
+    Object.keys(errors).forEach((field) => {
+      const step = errorStepByField[field]
+      if (step) stepsWithErrors.add(step)
+    })
+
     setValidationErrors(errors)
     setStepValidationErrors(Array.from(stepsWithErrors).sort())
     return Object.keys(errors).length === 0
@@ -533,6 +565,8 @@ function Formulaire() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (currentStep !== totalSteps) return
     
     // Clear previous step errors
     setStepValidationErrors([])
@@ -685,6 +719,8 @@ function Formulaire() {
 
   const handleNextStep = () => {
     if (currentStep < totalSteps) {
+      setValidationErrors({})
+      setStepValidationErrors([])
       setCurrentStep(currentStep + 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
@@ -738,6 +774,8 @@ function Formulaire() {
     )
   }
 
+  const FormContent = currentStep === totalSteps ? 'form' : 'div'
+
   return (
     <div className="max-w-4xl mx-auto px-2 md:px-0 mb-2">
       <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
@@ -785,7 +823,10 @@ function Formulaire() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <FormContent
+        onSubmit={currentStep === totalSteps ? handleSubmit : undefined}
+        className="space-y-6"
+      >
         {/* Étape 1: Informations générales */}
         {currentStep === 1 && (
           <InformationsGenerales
@@ -916,14 +957,17 @@ function Formulaire() {
               className="px-6 py-3 bg-primary text-white rounded-md font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {submitting ? (
-                <LoadingSpinner message="Envoi..." className="h-6" />
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
               ) : (
                 'Envoyer ma réponse'
               )}
             </button>
           )}
         </div>
-      </form>
+      </FormContent>
     </div>
   )
 }

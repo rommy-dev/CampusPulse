@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BarChart3, CheckCircle2, Download, Eye, UserCircle, X, XCircle } from 'lucide-react'
-import ExcelJS from 'exceljs'
 import { supabase } from '../lib/supabaseClient'
+import { buildResultsWorkbook, downloadBlob } from '../lib/excelExport'
 import Badge from '../components/Badge'
 import LoadingSpinner from '../components/LoadingSpinner'
 
@@ -47,6 +47,47 @@ function Resultat() {
     }
   }
 
+  async function exportAllResultsExcel() {
+    const usersWithResponses = users
+      .filter((user) => responsesByUser[user.id])
+      .map((user) => ({ ...user, response: responsesByUser[user.id] }))
+
+    if (!usersWithResponses.length) {
+      setError('Aucun résultat à exporter.')
+      return
+    }
+
+    try {
+      setError('')
+      const workbook = await buildResultsWorkbook(usersWithResponses)
+      const buffer = await workbook.xlsx.writeBuffer()
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      downloadBlob(blob, `tous_resultats_${new Date().toISOString().slice(0, 10)}.xlsx`)
+    } catch (err) {
+      setError(err.message || 'Erreur lors de l\u2019export global.')
+    }
+  }
+
+  async function exportUserResultsExcel(user) {
+    const response = responsesByUser[user.id]
+    if (!response) {
+      setError('Aucun formulaire disponible pour cet utilisateur.')
+      return
+    }
+
+    try {
+      setError('')
+      const workbook = await buildResultsWorkbook([{ ...user, response }])
+      const buffer = await workbook.xlsx.writeBuffer()
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+
+      const fullName = [user.prenom, user.nom].filter(Boolean).join(' ') || user.email || 'utilisateur'
+      downloadBlob(blob, `resultat_${fullName.replace(/\s+/g, '_').toLowerCase()}.xlsx`)
+    } catch (err) {
+      setError(err.message || 'Erreur lors de l\u2019export Excel.')
+    }
+  }
+
   function openUserResults(user) {
     const response = responsesByUser[user.id]
     if (!response) return
@@ -61,88 +102,6 @@ function Resultat() {
   }
 
   const completedCount = users.filter((user) => !!responsesByUser[user.id]).length
-
-  async function exportAllResultsExcel() {
-    const usersWithResponses = users.filter((user) => responsesByUser[user.id])
-
-    if (!usersWithResponses.length) {
-      setError('Aucun résultat à exporter.')
-      return
-    }
-
-    try {
-      setError('')
-      const workbook = new ExcelJS.Workbook()
-      const worksheet = workbook.addWorksheet('Tous résultats')
-
-      worksheet.columns = [
-        { header: 'Utilisateur', key: 'utilisateur', width: 25 },
-        { header: 'Email', key: 'email', width: 30 },
-        { header: 'Question', key: 'question', width: 35 },
-        { header: 'Réponse', key: 'reponse', width: 50 },
-      ]
-      worksheet.getRow(1).font = { bold: true }
-
-      usersWithResponses.forEach((user) => {
-        const flattened = flattenAnswersForExport(responsesByUser[user.id].answers)
-
-        flattened.forEach((item) => {
-          worksheet.addRow({
-            utilisateur: [user.prenom, user.nom].filter(Boolean).join(' ') || user.email || 'Utilisateur',
-            email: user.email || '',
-            question: item.question,
-            reponse: item.reponse,
-          })
-        })
-      })
-
-      const buffer = await workbook.xlsx.writeBuffer()
-      const blob = new Blob([buffer], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      })
-
-      downloadBlob(blob, `tous_resultats_${new Date().toISOString().slice(0, 10)}.xlsx`)
-    } catch (err) {
-      setError(err.message || 'Erreur lors de l’export global.')
-    }
-  }
-
-  async function exportUserResultsExcel(user) {
-    const response = responsesByUser[user.id]
-    if (!response) {
-      setError('Aucun formulaire disponible pour cet utilisateur.')
-      return
-    }
-
-    try {
-      setError('')
-      const workbook = new ExcelJS.Workbook()
-      const worksheet = workbook.addWorksheet('Réponses')
-
-      worksheet.columns = [
-        { header: 'Question', key: 'question', width: 35 },
-        { header: 'Réponse', key: 'reponse', width: 50 },
-      ]
-      worksheet.getRow(1).font = { bold: true }
-
-      flattenAnswersForExport(response.answers).forEach((item) => {
-        worksheet.addRow({
-          question: item.question,
-          reponse: item.reponse,
-        })
-      })
-
-      const buffer = await workbook.xlsx.writeBuffer()
-      const blob = new Blob([buffer], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      })
-
-      const fullName = [user.prenom, user.nom].filter(Boolean).join(' ') || user.email || 'utilisateur'
-      downloadBlob(blob, `resultat_${fullName.replace(/\s+/g, '_').toLowerCase()}.xlsx`)
-    } catch (err) {
-      setError(err.message || 'Erreur lors de l’export Excel.')
-    }
-  }
 
   return (
     <div className="max-w-6xl mx-auto px-2 md:px-0">
@@ -328,54 +287,6 @@ function Resultat() {
       )}
     </div>
   )
-}
-
-function downloadBlob(blob, filename) {
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  document.body.appendChild(link)
-  link.click()
-  link.remove()
-  URL.revokeObjectURL(url)
-}
-
-function flattenAnswersForExport(value, prefix = '', rows = []) {
-  if (value === null || value === undefined) {
-    if (prefix) {
-      rows.push({ question: prefix.replace(/_/g, ' '), reponse: '—' })
-    }
-    return rows
-  }
-
-  if (Array.isArray(value)) {
-    rows.push({ question: prefix.replace(/_/g, ' ') || 'Réponse', reponse: value.length ? value.join(', ') : 'Aucun' })
-    return rows
-  }
-
-  if (typeof value === 'boolean') {
-    rows.push({ question: prefix.replace(/_/g, ' ') || 'Réponse', reponse: value ? 'Oui' : 'Non' })
-    return rows
-  }
-
-  if (typeof value === 'object') {
-    Object.entries(value).forEach(([key, nestedValue]) => {
-      const nextKey = prefix ? `${prefix} > ${key}` : key
-      if (nestedValue && typeof nestedValue === 'object' && !Array.isArray(nestedValue)) {
-        flattenAnswersForExport(nestedValue, nextKey, rows)
-      } else {
-        rows.push({
-          question: nextKey.replace(/_/g, ' '),
-          reponse: nestedValue === null || nestedValue === undefined ? '—' : Array.isArray(nestedValue) ? (nestedValue.length ? nestedValue.join(', ') : 'Aucun') : typeof nestedValue === 'boolean' ? (nestedValue ? 'Oui' : 'Non') : String(nestedValue),
-        })
-      }
-    })
-    return rows
-  }
-
-  rows.push({ question: prefix.replace(/_/g, ' ') || 'Réponse', reponse: String(value) })
-  return rows
 }
 
 function AnswerDetails({ answers }) {
