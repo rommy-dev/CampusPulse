@@ -7,14 +7,13 @@ import InformationsGenerales from '../components/form/InformationsGenerales'
 import TransportConsommation from '../components/form/TransportConsommation'
 import BudgetEau from '../components/form/BudgetEau'
 import Alimentation from '../components/form/Alimentation'
-import HygieneVetements from '../components/form/HygieneVetements'
+import CycleVetements from '../components/form/CycleVetements'
 import ChimieVerte from '../components/form/ChimieVerte'
 import Technologie from '../components/form/Technologie'
 import ModeDeVie from '../components/form/ModeDeVie'
 
 function Formulaire() {
   const [user, setUser] = useState(null)
-  const [userProfile, setUserProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -31,7 +30,7 @@ function Formulaire() {
     'Budget & Eau',
     'Alimentation',
     'Technologie',
-    'Hygiène & Vêtements',
+    'Cycle de vie des vêtements',
     'Chimie verte',
     'Mode de vie'
   ]
@@ -107,22 +106,6 @@ function Formulaire() {
     gestion_restes_alimentaires: '',
     impact_chaine_approvisionnement: '',
 
-    // Étape 3: Hygiène & Vêtements
-    type_hygiene: [],
-    hygiene_frequence_jour: '',
-    hygiene_frequence_semaine: '',
-    lave_cheveux: false,
-    lave_cheveux_frequence_semaine: '',
-    lave_cheveux_produit: '',
-    lessive_methode: '',
-    lessive_frequence_semaine: '',
-    lessive_nombre_tenues: '',
-    type_vetements: [],
-    qualite_vetements: [],
-    repassage_frequence_semaine: '',
-    brushing_utilise: false,
-    lisseur_utilise: false,
-
     // Étape 5: Outils numériques et cycle de vie du matériel
     equipements_numeriques: [],
     duree_utilisation_appareil: '',
@@ -131,14 +114,16 @@ function Formulaire() {
     elimination_equipements_electroniques: '',
     ecoconception_numerique_suggestion: '',    
 
-    // Étape 5: Mode de vie
-    alcool_boit: false,
-    type_dechet: [],
-    ordures_frequence_semaine: '',
-    elimination_ordures: [],
-    tabac: false,
-    cigarettes: false,
-    produits_stupéfiants_frequence_semaine: ''
+    // Étape 6: Cycle de vie des vêtements
+    nombre_tenues_semaine: '',
+    frequence_renouvellement_vetements: '',
+    origine_achat_vetements: '',
+    possede_fibres_naturelles_locales: null,
+    lessive_frequence_methode: '',
+    lessive_ecologique_utilisee: null,
+    sechage_exterieur: null,
+    repare_vetements: null,
+    devenir_vetements_usages: '',
   })
 
   useEffect(() => {
@@ -162,7 +147,7 @@ function Formulaire() {
       if (existingResponse) {
         setAlreadyResponded(true)
       }
-    } catch (err) {
+    } catch {
       setError('Erreur lors du chargement. Veuillez vous reconnecter.')
     } finally {
       setLoading(false)
@@ -385,62 +370,51 @@ function Formulaire() {
         'Ce champ est obligatoire'
       stepsWithErrors.add(5)
     }
-    // Étape 3: Hygiène & Vêtements
-    if (!formData.type_hygiene || formData.type_hygiene.length === 0) {
-      errors.type_hygiene = 'Ce champ est obligatoire'
-      stepsWithErrors.add(3)
-    }
-    if (formData.hygiene_frequence_jour === '' || formData.hygiene_frequence_jour < 0) {
-      errors.hygiene_frequence_jour = 'Veuillez entrer un nombre positif'
-      stepsWithErrors.add(3)
-    }
-    if (formData.hygiene_frequence_semaine === '' || formData.hygiene_frequence_semaine < 0) {
-      errors.hygiene_frequence_semaine = 'Veuillez entrer un nombre positif'
-      stepsWithErrors.add(3)
-    }
-    if (formData.lave_cheveux) {
-      if (formData.lave_cheveux_frequence_semaine === '' || formData.lave_cheveux_frequence_semaine < 0) {
-        errors.lave_cheveux_frequence_semaine = 'Veuillez entrer un nombre positif'
-        stepsWithErrors.add(3)
-      }
-      if (!formData.lave_cheveux_produit) {
-        errors.lave_cheveux_produit = 'Ce champ est obligatoire'
-        stepsWithErrors.add(3)
-      }
-    }
-    if (!formData.lessive_methode) {
-      errors.lessive_methode = 'Ce champ est obligatoire'
-      stepsWithErrors.add(3)
-    }
-    if (formData.lessive_frequence_semaine === '' || formData.lessive_frequence_semaine < 0) {
-      errors.lessive_frequence_semaine = 'Veuillez entrer un nombre positif'
-      stepsWithErrors.add(3)
-    }
-    if (formData.lessive_nombre_tenues !== '' && formData.lessive_nombre_tenues < 0) {
-      errors.lessive_nombre_tenues = 'Veuillez entrer un nombre positif'
-      stepsWithErrors.add(3)
-    }
-    if (formData.repassage_frequence_semaine !== '' && formData.repassage_frequence_semaine < 0) {
-      errors.repassage_frequence_semaine = 'Veuillez entrer un nombre positif'
-      stepsWithErrors.add(3)
+
+    // Étape 6: Cycle de vie des vêtements
+    if (!formData.nombre_tenues_semaine) {
+      errors.nombre_tenues_semaine =
+        'Veuillez sélectionner le nombre de tenues utilisées par semaine.'
     }
 
-    // Étape 5: Mode de vie
-    if (!formData.type_dechet || formData.type_dechet.length === 0) {
-      errors.type_dechet = 'Veuillez sélectionner au moins un type de déchet'
-      stepsWithErrors.add(5)
+    if (!formData.frequence_renouvellement_vetements) {
+      errors.frequence_renouvellement_vetements =
+        'Veuillez sélectionner la fréquence de renouvellement de vos vêtements.'
     }
-    if (formData.ordures_frequence_semaine === '' || formData.ordures_frequence_semaine < 0) {
-      errors.ordures_frequence_semaine = 'Veuillez entrer un nombre positif'
-      stepsWithErrors.add(5)
+
+    if (!formData.origine_achat_vetements) {
+      errors.origine_achat_vetements =
+        'Veuillez sélectionner votre préférence d’achat de vêtements.'
     }
-    if (!formData.elimination_ordures || formData.elimination_ordures.length === 0) {
-      errors.elimination_ordures = 'Veuillez sélectionner au moins un lieu d\'élimination'
-      stepsWithErrors.add(5)
+
+    if (formData.possede_fibres_naturelles_locales === null) {
+      errors.possede_fibres_naturelles_locales =
+        'Veuillez répondre à cette question.'
     }
-    if ((formData.alcool_boit || formData.tabac || formData.cigarettes) && (formData.produits_stupéfiants_frequence_semaine === '' || formData.produits_stupéfiants_frequence_semaine < 0)) {
-      errors.produits_stupéfiants_frequence_semaine = 'Veuillez entrer un nombre positif'
-      stepsWithErrors.add(5)
+
+    if (!formData.lessive_frequence_methode) {
+      errors.lessive_frequence_methode =
+        'Veuillez sélectionner votre méthode de lavage.'
+    }
+
+    if (formData.lessive_ecologique_utilisee === null) {
+      errors.lessive_ecologique_utilisee =
+        'Veuillez répondre à cette question.'
+    }
+
+    if (formData.sechage_exterieur === null) {
+      errors.sechage_exterieur =
+        'Veuillez répondre à cette question.'
+    }
+
+    if (formData.repare_vetements === null) {
+      errors.repare_vetements =
+        'Veuillez répondre à cette question.'
+    }
+
+    if (!formData.devenir_vetements_usages) {
+      errors.devenir_vetements_usages =
+        'Veuillez sélectionner ce que vous faites de vos vêtements usagés.'
     }
 
     setValidationErrors(errors)
@@ -539,22 +513,16 @@ function Formulaire() {
         ecoconception_numerique_suggestion:
           formData.ecoconception_numerique_suggestion?.trim() || null,
 
-        type_hygiene: formData.type_hygiene,
-        hygiene_frequence_jour: parseInt(formData.hygiene_frequence_jour),
-        hygiene_frequence_semaine: parseInt(formData.hygiene_frequence_semaine),
-        lave_cheveux: formData.lave_cheveux,
-        ...(formData.lave_cheveux && {
-          lave_cheveux_frequence_semaine: parseInt(formData.lave_cheveux_frequence_semaine),
-          lave_cheveux_produit: formData.lave_cheveux_produit
-        }),
-        lessive_methode: formData.lessive_methode,
-        lessive_frequence_semaine: parseInt(formData.lessive_frequence_semaine),
-        ...(formData.lessive_nombre_tenues !== '' && { lessive_nombre_tenues: parseInt(formData.lessive_nombre_tenues) }),
-        type_vetements: formData.type_vetements,
-        qualite_vetements: formData.qualite_vetements,
-        ...(formData.repassage_frequence_semaine !== '' && { repassage_frequence_semaine: parseInt(formData.repassage_frequence_semaine) }),
-        brushing_utilise: formData.brushing_utilise,
-        lisseur_utilise: formData.lisseur_utilise,
+        // Cycle de vie des vêtements
+        nombre_tenues_semaine: formData.nombre_tenues_semaine,
+        frequence_renouvellement_vetements: formData.frequence_renouvellement_vetements,
+        origine_achat_vetements: formData.origine_achat_vetements,
+        possede_fibres_naturelles_locales: formData.possede_fibres_naturelles_locales,
+        methode_lavage_vetements: formData.methode_lavage_vetements,
+        lessive_ecologique_utilisee: formData.lessive_ecologique_utilisee,
+        sechage_exterieur: formData.sechage_exterieur,
+        repare_vetements: formData.repare_vetements,
+        devenir_vetements_usages: formData.devenir_vetements_usages,
         
         alcool_boit: formData.alcool_boit,
         type_dechet: formData.type_dechet,
@@ -578,7 +546,7 @@ function Formulaire() {
       } else {
         setSubmitted(true)
       }
-    } catch (err) {
+    } catch {
       setError('Erreur lors de la soumission. Veuillez réessayer.')
     } finally {
       setSubmitting(false)
@@ -738,8 +706,17 @@ function Formulaire() {
           />
         )}
 
+        {currentStep === 6 && (
+          <CycleVetements
+            formData={formData}
+            setFormData={setFormData}
+            validationErrors={validationErrors}
+            setValidationErrors={setValidationErrors}
+          />
+        )}
+
         {/* Validation error badge for step 5 */}
-        {currentStep === 5 && stepValidationErrors.length > 0 && (
+        {currentStep === 6 && stepValidationErrors.length > 0 && (
           <div className="bg-surface rounded-lg shadow-sm border border-text-secondary/10 p-4 md:p-6">
             <Badge 
               type="error" 
