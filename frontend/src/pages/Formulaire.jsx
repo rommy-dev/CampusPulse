@@ -86,6 +86,13 @@ function Formulaire() {
     coupures_frequentes: '',
     impact_coupures: '',
 
+    // Étape 3: Budget & Eau
+    budget_mensuel_total: '',
+    postes_depenses: [],
+    budget_couvre_besoins: '',
+    acces_eau_potable: '',
+    pratiques_economie_eau: [],
+
     // Étape 2: Alimentation
     alimentation: {
       saute_repas: false,
@@ -295,6 +302,39 @@ function Formulaire() {
     if (!formData.coupures_frequentes) {
       errors.coupures_frequentes = 'Ce champ est obligatoire'
       stepsWithErrors.add(2)
+    }
+
+    // Budget & Eau
+    if (!formData.budget_mensuel_total) {
+      errors.budget_mensuel_total = 'Ce champ est obligatoire'
+      stepsWithErrors.add(3)
+    }
+
+    if (
+      !formData.postes_depenses ||
+      formData.postes_depenses.length !== 2
+    ) {
+      errors.postes_depenses = 'Veuillez sélectionner exactement deux postes de dépenses'
+      stepsWithErrors.add(3)
+    }
+
+    if (!formData.budget_couvre_besoins) {
+      errors.budget_couvre_besoins = 'Ce champ est obligatoire'
+      stepsWithErrors.add(3)
+    }
+
+    if (!formData.acces_eau_potable) {
+      errors.acces_eau_potable = 'Ce champ est obligatoire'
+      stepsWithErrors.add(3)
+    }
+
+    if (
+      !formData.pratiques_economie_eau ||
+      formData.pratiques_economie_eau.length === 0
+    ) {
+      errors.pratiques_economie_eau =
+        'Veuillez sélectionner au moins une pratique'
+      stepsWithErrors.add(3)
     }
 
     // Étape 2: Alimentation
@@ -537,7 +577,14 @@ function Formulaire() {
         coupures_frequentes: formData.coupures_frequentes || null,
         impact_coupures: formData.impact_coupures || null,
 
-        
+        // Budget & Eau
+        budget_mensuel_total: formData.budget_mensuel_total || null,
+        postes_depenses: formData.postes_depenses || [],
+        budget_couvre_besoins: formData.budget_couvre_besoins || null,
+        acces_eau_potable: formData.acces_eau_potable || null,
+        pratiques_economie_eau: formData.pratiques_economie_eau || [],
+
+
         alimentation: formData.alimentation ? {
           ...formData.alimentation,
           moyen_cuisson: formData.alimentation.moyen_cuisson,
@@ -755,13 +802,12 @@ function Formulaire() {
           />
         )}
 
-        {/* Étape 3: Hygiène & Vêtements */}
         {currentStep === 3 && (
-          <HygieneVetements 
-            formData={formData} 
-            setFormData={setFormData} 
-            validationErrors={validationErrors} 
-            setValidationErrors={setValidationErrors} 
+          <BudgetEau
+            formData={formData}
+            setFormData={setFormData}
+            validationErrors={validationErrors}
+            setValidationErrors={setValidationErrors}
           />
         )}
 
