@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import {
-  TrendingUp, Users, Home, Wallet, Droplet, Utensils,
+  TrendingUp, Home, Wallet, Droplet, Utensils,
   Laptop, Shirt, FlaskConical, Trash2, Lightbulb,
   Info, User, MapPin, Car, Zap, Leaf
 } from 'lucide-react'
@@ -10,7 +10,6 @@ import { THEME, CHART_COLORS, LABELS } from '../lib/statistiquesConstants'
 import { DEMO_RESPONSES } from '../lib/demoData'
 import SurveyChart from '../components/SurveyChart'
 import ChartCard from '../components/ChartCard'
-import KpiCard from '../components/KpiCard'
 import TabCarousel from '../components/TabCarousel'
 
 // Use CSS variables at runtime so dark mode works
@@ -45,7 +44,7 @@ function Statistiques() {
   const [responses, setResponses] = useState([])
   const [loading, setLoading] = useState(true)
   const [isDemoData, setIsDemoData] = useState(false)
-  const [activeTab, setActiveTab] = useState('tous')
+  const [activeTab, setActiveTab] = useState('generales')
   const theme = useThemeColors()
 
   useEffect(() => {
@@ -364,7 +363,6 @@ function Statistiques() {
   }
 
   const TABS = [
-    { id: 'tous', label: 'Vue d\'ensemble' },
     { id: 'generales', label: 'Informations Générales' },
     { id: 'transport', label: 'Transport & Énergie' },
     { id: 'budget', label: 'Budget & Eau' },
@@ -398,23 +396,6 @@ function Statistiques() {
             <span>Données d'illustration</span>
           </div>
         )}
-      </div>
-
-      {/* ── Vue d'ensemble de l'échantillon ── */}
-      <SectionHeader icon={Users} title="Vue d'Ensemble de l'Échantillon" color="text-primary" />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <KpiCard icon={Users} color="text-primary" bg="bg-primary/10"
-          label="Répondants" value={stats.n} unit="étudiant(e)s"
-          sub="Taille de l'échantillon" />
-        <KpiCard icon={User} color="text-secondary" bg="bg-secondary/10"
-          label="Répartition Genre" value={stats.genreData[0]?.pct || 0} unit="%"
-          sub={stats.genreData[0]?.name || ''} />
-        <KpiCard icon={Home} color="text-warning" bg="bg-warning/10"
-          label="Logement Principal" value={stats.residenceData[0]?.pct || 0} unit="%"
-          sub={stats.residenceData[0]?.name || ''} />
-        <KpiCard icon={Laptop} color="text-danger" bg="bg-danger/10"
-          label="Équipements Numériques" value={stats.equipementsNumeriquesData[0]?.pct || 0} unit="%"
-          sub={stats.equipementsNumeriquesData[0]?.name || ''} />
       </div>
 
       {/* ── Tabs ────────────────────────────────────────────── */}

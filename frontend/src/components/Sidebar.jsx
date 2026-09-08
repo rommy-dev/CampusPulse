@@ -37,13 +37,6 @@ function Sidebar({ userRole }) {
             <BarChart3 className="w-5 h-5" />
             <span className="font-medium">Résultat</span>
           </Link>
-          <Link 
-            to="/statistiques" 
-            className={`link-hover flex items-center gap-3 px-4 py-3 rounded-lg text-text-primary ${userRole !== 'admin' ? 'hidden' : ''} ${isActive('/statistiques') ? 'bg-primary text-white' : 'hover:bg-bg'}`}
-          >
-            <TrendingUp className="w-5 h-5" />
-            <span className="font-medium">Statistiques</span>
-          </Link>
         </div>
         <div className="space-y-1">
           <h2 className="text-xs font-semibold text-text-secondary uppercase tracking-wider px-4 py-2">Public</h2>
@@ -54,7 +47,14 @@ function Sidebar({ userRole }) {
             <FileText className="w-5 h-5" />
             <span className="font-medium">Formulaire</span>
           </Link>
-          <Link 
+          <Link
+            to="/statistiques"
+            className={`link-hover flex items-center gap-3 px-4 py-3 rounded-lg text-text-primary ${isActive('/statistiques') ? 'bg-primary text-white' : 'hover:bg-bg'}`}
+          >
+            <TrendingUp className="w-5 h-5" />
+            <span className="font-medium">Statistiques</span>
+          </Link>
+          <Link
             to="/profil" 
             className={`link-hover flex items-center gap-3 px-4 py-3 rounded-lg text-text-primary ${isActive('/profil') ? 'bg-primary text-white' : 'hover:bg-bg'}`}
           >

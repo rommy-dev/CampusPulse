@@ -56,11 +56,7 @@ function App() {
             <Resultat />
           </AdminRoute>
         } />
-        <Route path="statistiques" element={
-          <AdminRoute>
-            <Statistiques />
-          </AdminRoute>
-        } />
+        <Route path="statistiques" element={<Statistiques />} />
         <Route path="profil" element={<Profil />} />
       </Route>
       <Route path="/login" element={<Login />} />
