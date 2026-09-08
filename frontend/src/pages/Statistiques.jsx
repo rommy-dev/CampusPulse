@@ -1,14 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
 import {
-  BarChart, Bar, ScatterChart, Scatter, RadarChart, Radar, PolarGrid,
-  PolarAngleAxis, PolarRadiusAxis, AreaChart, Area,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
+  BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts'
 import {
-  TrendingUp, Car, Droplet, Zap, Trash2,
-  Coffee, Laptop, Home, Utensils,
-  Volume2, ShieldAlert, Shirt, Clock,
-  Info, Sliders, Tv, Users, MapPin, BarChart3, GitCompare
+  TrendingUp, Users, Home, Wallet, Droplet, Utensils,
+  Laptop, Shirt, FlaskConical, Trash2, Lightbulb,
+  Info, User, MapPin, Car, Zap, Leaf
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -64,9 +62,6 @@ function useThemeColors() {
 }
 
 // ── Custom recharts tooltip ────────────────────────────────────────────
-// Shows the raw series value(s) AND, whenever the underlying data point
-// carries a `pct`/`total` or `n` field, a second line with the effectif
-// (n=20 rule: never show a % without the count it is built from).
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
   const point = payload[0]?.payload || {}
@@ -95,203 +90,522 @@ function CustomTooltip({ active, payload, label }) {
 const DEMO_RESPONSES = [
   {
     answers: {
-      logement: 'residence_universitaire',
-      transport: ['transport_commun', 'pied'],
-      frequence_venue: 5, frequence_depart: 10,
-      domicialisation_ville: 'Vontovorona',
-      domicialisation_distance_vontovorona: 2,
-      repas: { repas_maison: ['riz', 'legumes'], cantine: ['menu_du_jour'] },
-      gouters: ['fruits'],
-      cafe_boit: true, cafe_frequence_jour: 2,
-      douche_quotidienne: true, douche_frequence: 7,
-      eau_bouillir: false,
-      vetements_semaine: 5, vetements_laver_repasser: 5,
-      brushing_utilise: false, lissage_utilise: false,
-      telephone_marque: 'Samsung', recharge_telephone_jour: 2,
-      ecrans_tel_heures_jour: 4.5,
-      pc_possede: true, pc_nombre: 1,
-      pc_usage: ['etudes', 'reseaux_sociaux'],
-      recharge_pc_frequence: 1, ecrans_pc_heures_jour: 6,
-      tablette_possede: false,
-      alcool_boit: false, nuisance_sonore: true,
-      ordures_quantite: 'un_sac_moyen'
+      // Informations générales
+      date_naissance: '2000-01-15',
+      genre: 'Masculin',
+      filiere: 'Génie des Procédés',
+      annee_universitaire: 'L3',
+      residence_principale: 'Cité universitaire (CUR / Vontovorona)',
+      loyer_mensuel: 'Je ne paie pas de loyer (logement familial / cité)',
+      source_financement: ['Soutien financier familial', "Bourse d'études"],
+      tranche_age: '18_22',
+      age_exact: 24,
+
+      // Transport & Consommation
+      transport_principal: 'taxi_be',
+      autre_transport: null,
+      combine_transports: 'non',
+      duree_trajet: '15_30min',
+      depense_transport_jour: '2000_4000',
+      difficultes_transport: ['frequence_insuffisante'],
+      led_utilise: 'oui',
+      eteint_lumieres_debranche: 'oui',
+      coupures_frequentes: 'oui',
+      impact_coupures: 'Parfois pas de lumière pour travailler le soir',
+
+      // Budget & Eau
+      budget_mensuel_total: '100000_200000',
+      postes_depenses: ['alimentation', 'transport'],
+      budget_couvre_besoins: 'partiellement',
+      acces_eau_potable: 'intermittent',
+      pratiques_economie_eau: ['fermer_robinet', 'recuperer_eau'],
+
+      // Alimentation
+      nombre_repas_jour: '2_repas',
+      lieu_repas_principaux: 'restaurant_universitaire',
+      source_approvisionnement_alimentaire: 'cantine_gargotes',
+      energie_cuisson: 'ne_cuisine_pas',
+      frequence_collation: 'occasionnellement',
+      depense_alimentation_jour: '2000_4000',
+      consommation_viande_poisson: 'non',
+      fruits_legumes_locaux_saison: 'oui',
+      produits_plastique_usage_unique: 'oui',
+      alimentation_equilibree: 'partiellement',
+      gestion_restes_alimentaires: 'conserves',
+      impact_chaine_approvisionnement: 'L\'approvisionnement local réduit l\'empreinte carbone',
+
+      // Technologie
+      equipements_numeriques: ['smartphone_personnel', 'ordinateur_portable_fixe'],
+      duree_utilisation_appareil: '2_4_ans',
+      recharge_appareils_plusieurs_fois_nuit: 'non',
+      reaction_panne_appareil: 'reparation_technicien_local',
+      elimination_equipements_electroniques: 'conservation_chez_moi',
+      ecoconception_numerique_suggestion: 'Optimiser les logiciels pour réduire la consommation énergétique',
+
+      // Vêtements
+      nombre_tenues_semaine: '4_6',
+      frequence_renouvellement_vetements: 'une_fois_an',
+      origine_achat_vetements: 'mixte',
+      possede_fibres_naturelles_locales: true,
+      methode_lavage_vetements: 'lavage_main',
+      lessive_ecologique_utilisee: false,
+      sechage_exterieur: true,
+      repare_vetements: true,
+      devenir_vetements_usages: 'dons',
+
+      // Hygiène
+      produits_chimiques_utilises: ['savons_gels_douche', 'cosmetiques'],
+      lit_etiquettes_produits: false,
+      connait_principes_chimie_verte: false,
+      procedes_locaux_durables: false,
+      favorable_ateliers_ecologiques: true,
+      contribution_formation_environnement: 'Mes compétences en chimie peuvent aider à développer des produits écologiques',
+
+      // Déchets
+      types_dechets_produits: ['organiques', 'plastiques', 'papiers_cartons'],
+      utilise_contenants_reutilisables: 'souvent',
+      pratique_tri_selectif: 'parfois',
+      revend_bouteilles_metaux_collecteurs: true,
+      lieu_elimination_dechets: 'poubelle_publique_dediee',
+      connait_toxicite_combustion_plastiques: true,
+      poubelles_suffisantes_campus: 'partiellement',
+      pret_a_participer_actions_environnementales: 'oui_tout_a_fait_favorable',
+
+      // Perception
+      perception_urgence_dechets: 'urgent',
+      suggestions_amelioration_campus: 'Plus de poubelles de tri sélectif et campagnes de sensibilisation'
     }
   },
   {
     answers: {
-      logement: 'chez_parents',
-      transport: ['voiture'],
-      frequence_venue: 4, frequence_depart: 8,
-      domicialisation_ville: 'Antanimena',
-      domicialisation_distance_vontovorona: 14.5,
-      repas: { repas_maison: ['riz', 'viande'], fast_food: ['burger'] },
-      gouters: ['biscuits_sucres'],
-      cafe_boit: true, cafe_frequence_jour: 3,
-      douche_quotidienne: true, douche_frequence: 7,
-      eau_bouillir: true,
-      vetements_semaine: 7, vetements_laver_repasser: 7,
-      brushing_utilise: true, lissage_utilise: true,
-      telephone_marque: 'iPhone', recharge_telephone_jour: 2,
-      ecrans_tel_heures_jour: 5,
-      pc_possede: true, pc_nombre: 1,
-      pc_usage: ['etudes', 'loisir_jeux', 'travail'],
-      recharge_pc_frequence: 2, ecrans_pc_heures_jour: 8,
-      tablette_possede: true, tablette_nombre: 1,
-      recharge_tablette_frequence: 1,
-      alcool_boit: true, nuisance_sonore: false,
-      ordures_quantite: 'deux_sacs_ou_plus'
+      // Informations générales
+      date_naissance: '1999-05-20',
+      genre: 'Féminin',
+      filiere: 'Génie Chimique',
+      annee_universitaire: 'M1',
+      residence_principale: 'Logement étudiant en colocation / location en ville (Antananarivo / périphérie)',
+      loyer_mensuel: '100 001 à 250 000 Ar',
+      source_financement: ['Emploi ou activité rémunérée / Freelance'],
+      tranche_age: '23_25',
+      age_exact: 25,
+
+      // Transport & Consommation
+      transport_principal: 'covoiturage',
+      autre_transport: null,
+      combine_transports: 'oui',
+      duree_trajet: '46min_1h',
+      depense_transport_jour: 'plus_4000',
+      difficultes_transport: ['cout_eleve', 'routes_mauvais_etat'],
+      led_utilise: 'oui',
+      eteint_lumieres_debranche: 'non',
+      coupures_frequentes: 'non',
+      impact_coupures: null,
+
+      // Budget & Eau
+      budget_mensuel_total: '200001_350000',
+      postes_depenses: ['logement', 'communication'],
+      budget_couvre_besoins: 'oui_toujours',
+      acces_eau_potable: 'permanent_bonne_qualite',
+      pratiques_economie_eau: ['fermer_robinet'],
+
+      // Alimentation
+      nombre_repas_jour: '3_repas_ou_plus',
+      lieu_repas_principaux: 'maison_cuisine',
+      source_approvisionnement_alimentaire: 'marche_local',
+      energie_cuisson: 'gaz_butane',
+      frequence_collation: 'plusieurs_fois_semaine',
+      depense_alimentation_jour: '4001_6000',
+      consommation_viande_poisson: 'oui',
+      fruits_legumes_locaux_saison: 'oui',
+      produits_plastique_usage_unique: 'non',
+      alimentation_equilibree: 'oui_tout_a_fait',
+      gestion_restes_alimentaires: 'animaux_compostage',
+      impact_chaine_approvisionnement: 'Réduire les intermédiaires pour diminuer l\'empreinte carbone',
+
+      // Technologie
+      equipements_numeriques: ['smartphone_personnel', 'ordinateur_portable_fixe', 'tablette_tactile'],
+      duree_utilisation_appareil: 'moins_2_ans',
+      recharge_appareils_plusieurs_fois_nuit: 'oui',
+      reaction_panne_appareil: 'rachat_appareil_neuf',
+      elimination_equipements_electroniques: 'poubelle_ordinaire',
+      ecoconception_numerique_suggestion: 'Développer des applications plus légères et moins gourmandes en énergie',
+
+      // Vêtements
+      nombre_tenutes_semaine: '7_plus',
+      frequence_renouvellement_vetements: 'plusieurs_fois_an',
+      origine_achat_vetements: 'neuf',
+      possede_fibres_naturelles_locales: false,
+      methode_lavage_vetements: 'machine',
+      lessive_ecologique_utilisee: true,
+      sechage_exterieur: false,
+      repare_vetements: false,
+      devenir_vetements_usages: 'revente',
+
+      // Hygiène
+      produits_chimiques_utilises: ['savons_gels_douche', 'cosmetiques', 'nettoyage_domestique'],
+      lit_etiquettes_produits: true,
+      connait_principes_chimie_verte: true,
+      procedes_locaux_durables: true,
+      favorable_ateliers_ecologiques: true,
+      contribution_formation_environnement: 'Je peux contribuer par la recherche sur les procédés chimiques verts',
+
+      // Déchets
+      types_dechets_produits: ['plastiques', 'electroniques_toxiques'],
+      utilise_contenants_reutilisables: 'parfois',
+      pratique_tri_selectif: 'oui_systematiquement',
+      revend_bouteilles_metaux_collecteurs: false,
+      lieu_elimination_dechets: 'incineration_brulement',
+      connait_toxicite_combustion_plastiques: true,
+      poubelles_suffisantes_campus: 'non_insuffisant',
+      pret_a_participer_actions_environnementales: 'peut_etre',
+
+      // Perception
+      perception_urgence_dechets: 'modere',
+      suggestions_amelioration_campus: 'Mettre en place un système de collecte des déchets électroniques'
     }
   },
   {
     answers: {
-      logement: 'colocation',
-      transport: ['transport_commun', 'moto'],
-      frequence_venue: 5, frequence_depart: 10,
-      domicialisation_ville: 'Anosibe',
-      domicialisation_distance_vontovorona: 11,
-      repas: { repas_maison: ['feculents'], repas_rue: ['mofo_gasy', 'brochettes_rue'], saute_repas: true },
-      gouters: ['snacks_sales'],
-      cafe_boit: true, cafe_frequence_jour: 1,
-      douche_quotidienne: false, douche_frequence: 4,
-      eau_bouillir: true,
-      vetements_semaine: 4, vetements_laver_repasser: 4,
-      brushing_utilise: false, lissage_utilise: false,
-      telephone_marque: 'Xiaomi', recharge_telephone_jour: 1,
-      ecrans_tel_heures_jour: 3.5,
-      pc_possede: true, pc_nombre: 1,
-      pc_usage: ['etudes'],
-      recharge_pc_frequence: 1, ecrans_pc_heures_jour: 4,
-      tablette_possede: false,
-      alcool_boit: false, nuisance_sonore: true,
-      ordures_quantite: 'moins_petit_sac'
-    }
-  },
-  {
-    answers: {
-      logement: 'location_seul',
-      transport: ['velo'],
-      frequence_venue: 6, frequence_depart: 12,
-      domicialisation_ville: 'Vontovorona',
-      domicialisation_distance_vontovorona: 1.5,
-      repas: { repas_maison: ['riz', 'legumineuses'], cantine: ['sandwich'] },
-      gouters: ['fruits', 'biscuits_sucres'],
-      cafe_boit: false,
-      douche_quotidienne: true, douche_frequence: 7,
-      eau_bouillir: false,
-      vetements_semaine: 6, vetements_laver_repasser: 5,
-      brushing_utilise: false, lissage_utilise: false,
-      telephone_marque: 'Realme', recharge_telephone_jour: 1,
-      ecrans_tel_heures_jour: 3,
-      pc_possede: true, pc_nombre: 1,
-      pc_usage: ['etudes', 'travail'],
-      recharge_pc_frequence: 1, ecrans_pc_heures_jour: 7,
-      tablette_possede: false,
-      alcool_boit: false, nuisance_sonore: false,
-      ordures_quantite: 'un_sac_moyen'
-    }
-  },
-  {
-    answers: {
-      logement: 'residence_universitaire',
-      transport: ['pied', 'transport_commun'],
-      frequence_venue: 5, frequence_depart: 10,
-      domicialisation_ville: 'Vontovorona',
-      domicialisation_distance_vontovorona: 0.8,
-      repas: { cantine: ['menu_du_jour', 'salade'], repas_rue: ['mofo_gasy'] },
-      gouters: ['rien'],
-      cafe_boit: true, cafe_frequence_jour: 1,
-      douche_quotidienne: true, douche_frequence: 7,
-      eau_bouillir: false,
-      vetements_semaine: 4, vetements_laver_repasser: 3,
-      brushing_utilise: false, lissage_utilise: false,
-      telephone_marque: 'Tecno', recharge_telephone_jour: 1,
-      ecrans_tel_heures_jour: 5,
-      pc_possede: false,
-      tablette_possede: false,
-      alcool_boit: false, nuisance_sonore: true,
-      ordures_quantite: 'moins_petit_sac'
-    }
-  },
-  {
-    answers: {
-      logement: 'chez_parents',
-      transport: ['moto', 'transport_commun'],
-      frequence_venue: 3, frequence_depart: 6,
-      domicialisation_ville: 'Ambohijanaka',
-      domicialisation_distance_vontovorona: 18,
-      repas: { repas_maison: ['riz', 'poisson', 'legumes'], fast_food: ['frites', 'brochettes_grillades'] },
-      gouters: ['snacks_sales', 'biscuits_sucres'],
-      cafe_boit: true, cafe_frequence_jour: 2,
-      douche_quotidienne: true, douche_frequence: 7,
-      eau_bouillir: true,
-      vetements_semaine: 5, vetements_laver_repasser: 5,
-      brushing_utilise: true, lissage_utilise: false,
-      telephone_marque: 'Samsung', recharge_telephone_jour: 2,
-      ecrans_tel_heures_jour: 6,
-      pc_possede: true, pc_nombre: 1,
-      pc_usage: ['etudes', 'reseaux_sociaux', 'loisir_jeux'],
-      recharge_pc_frequence: 1, ecrans_pc_heures_jour: 5,
-      tablette_possede: false,
-      alcool_boit: true, nuisance_sonore: false,
-      ordures_quantite: 'un_sac_moyen'
+      // Informations générales
+      date_naissance: '2001-08-10',
+      genre: 'Masculin',
+      filiere: 'Génie de l\'Environnement',
+      annee_universitaire: 'L2',
+      residence_principale: 'Chez vos parents ou en famille',
+      loyer_mensuel: 'Je ne paie pas de loyer (logement familial / cité)',
+      source_financement: ['Soutien financier familial'],
+      tranche_age: '18_22',
+      age_exact: 23,
+
+      // Transport & Consommation
+      transport_principal: 'pied',
+      autre_transport: null,
+      combine_transports: 'non',
+      duree_trajet: 'moins_15min',
+      depense_transport_jour: 'rien',
+      difficultes_transport: ['aucune'],
+      led_utilise: 'non',
+      eteint_lumieres_debranche: 'non',
+      coupures_frequentes: 'oui',
+      impact_coupures: 'Impact sur mes révisions',
+
+      // Budget & Eau
+      budget_mensuel_total: 'moins_100000',
+      postes_depenses: ['materiel_scolaire', 'alimentation'],
+      budget_couvre_besoins: 'non_rarement',
+      acces_eau_potable: 'difficile_courvee',
+      pratiques_economie_eau: ['recuperer_eau', 'reparer_fuites'],
+
+      // Alimentation
+      nombre_repas_jour: '2_repas',
+      lieu_repas_principaux: 'famille_parents',
+      source_approvisionnement_alimentaire: 'maison_denrees_familiales',
+      energie_cuisson: 'charbon_bois',
+      frequence_collation: 'rarement_jamais',
+      depense_alimentation_jour: 'moins_2000',
+      consommation_viande_poisson: 'non',
+      fruits_legumes_locaux_saison: 'oui',
+      produits_plastique_usage_unique: 'non',
+      alimentation_equilibree: 'partiellement',
+      gestion_restes_alimentaires: 'proches_donnes',
+      impact_chaine_approvisionnement: 'Les circuits courts sont essentiels pour réduire l\'impact environnemental',
+
+      // Technologie
+      equipements_numeriques: ['smartphone_personnel'],
+      duree_utilisation_appareil: '5_ans_plus',
+      recharge_appareils_plusieurs_fois_nuit: 'non',
+      reaction_panne_appareil: 'reparation_soi_meme',
+      elimination_equipements_electroniques: 'filiere_collecte_recyclage',
+      ecoconception_numerique_suggestion: 'Promouvoir l\'utilisation de logiciels open-source moins gourmands',
+
+      // Vêtements
+      nombre_tenutes_semaine: '1_3',
+      frequence_renouvellement_vetements: '2_3_ans',
+      origine_achat_vetements: 'seconde_main',
+      possede_fibres_naturelles_locales: true,
+      methode_lavage_vetements: 'lavage_main',
+      lessive_ecologique_utilisee: true,
+      sechage_exterieur: true,
+      repare_vetements: true,
+      devenir_vetements_usages: 'reutilisation',
+
+      // Hygiène
+      produits_chimiques_utilises: ['savons_gels_douche'],
+      lit_etiquettes_produits: false,
+      connait_principes_chimie_verte: true,
+      procedes_locaux_durables: false,
+      favorable_ateliers_ecologiques: true,
+      contribution_formation_environnement: 'Sensibiliser aux pratiques écologiques dans mon entourage',
+
+      // Déchets
+      types_dechets_produits: ['organiques', 'papiers_cartons'],
+      utilise_contenants_reutilisables: 'toujours',
+      pratique_tri_selectif: 'oui_systematiquement',
+      revend_bouteilles_metaux_collecteurs: true,
+      lieu_elimination_dechets: 'poubelle_publique_dediee',
+      connait_toxicite_combustion_plastiques: true,
+      poubelles_suffisantes_campus: 'partiellement',
+      pret_a_participer_actions_environnementales: 'oui_tout_a_fait_favorable',
+
+      // Perception
+      perception_urgence_dechets: 'urgent',
+      suggestions_amelioration_campus: 'Créer un compost sur le campus pour les déchets organiques'
     }
   }
 ]
 
 // ── Label maps ─────────────────────────────────────────────────────────
 const LABELS = {
-  logement: {
-    residence_universitaire: 'Résidence U.',
-    chez_parents: 'Chez parents',
-    colocation: 'Colocation',
-    location_seul: 'Location seul',
-    autre: 'Autre'
+  // Informations générales
+  genre: {
+    'Masculin': 'Masculin',
+    'Féminin': 'Féminin'
   },
-  transport: {
-    transport_commun: 'Transports en commun',
-    pied: 'À pied',
-    voiture: 'Voiture',
-    moto: 'Moto',
-    velo: 'Vélo',
-    autre: 'Autre'
+  tranche_age: {
+    'moins_18': '< 18 ans',
+    '18_22': '18-22 ans',
+    '23_25': '23-25 ans',
+    'plus_25': '> 25 ans'
   },
-  repas: {
-    maison: 'Repas maison',
-    cantine: 'Cantine',
-    fast_food: 'Fast food',
-    repas_rue: 'Repas de rue'
+  residence_principale: {
+    'Cité universitaire (CUR / Vontovorona)': 'Cité universitaire',
+    'Logement étudiant en colocation / location en ville (Antananarivo / périphérie)': 'Colocation/Location',
+    'Chez vos parents ou en famille': 'Chez parents',
+    'Foyer ou autre type de logement': 'Autre'
   },
-  pcUsage: {
-    etudes: 'Études',
-    loisir_jeux: 'Loisirs & Jeux',
-    travail: 'Travail',
-    reseaux_sociaux: 'Réseaux sociaux',
-    autre: 'Autre'
+  loyer_mensuel: {
+    'Je ne paie pas de loyer (logement familial / cité)': 'Pas de loyer',
+    'Moins de 50 000 Ar': '< 50k Ar',
+    '50 000 à 100 000 Ar': '50-100k Ar',
+    '100 001 à 250 000 Ar': '100-250k Ar',
+    'Plus de 250 000 Ar': '> 250k Ar'
   },
-  waste: {
-    moins_petit_sac: '< 1 petit sac',
-    un_sac_moyen: '1 sac moyen',
-    deux_sacs_ou_plus: '2+ sacs',
-    ne_sait_pas: 'Ne sait pas'
+  source_financement: {
+    'Soutien financier familial': 'Famille',
+    "Bourse d'études": 'Bourse',
+    'Emploi ou activité rémunérée / Freelance': 'Emploi',
+    'Économies personnelles': 'Économies'
+  },
+
+  // Transport
+  transport_principal: {
+    'pied': 'À pied',
+    'taxi_be': 'Taxi-be',
+    'covoiturage': 'Covoiturage',
+    'velo_moto_deux_roues': 'Vélo/Moto',
+    'voiture_personnelle_familiale': 'Voiture',
+    'autre': 'Autre'
+  },
+  duree_trajet: {
+    'moins_15min': '< 15 min',
+    '15_30min': '15-30 min',
+    '31_45min': '31-45 min',
+    '46min_1h': '46min-1h',
+    'plus_1h': '> 1h'
+  },
+  depense_transport_jour: {
+    'rien': 'Rien',
+    'moins_2000': '< 2k Ar',
+    '2000_4000': '2-4k Ar',
+    'plus_4000': '> 4k Ar'
+  },
+  difficultes_transport: {
+    'cout_eleve': 'Coût élevé',
+    'frequence_insuffisante': 'Fréquence insuffisante',
+    'routes_mauvais_etat': 'Routes en mauvais état',
+    'insecurite': 'Insécurité',
+    'aucune': 'Aucune'
+  },
+
+  // Budget & Eau
+  budget_mensuel_total: {
+    'moins_100000': '< 100k Ar',
+    '100000_200000': '100-200k Ar',
+    '200001_350000': '200-350k Ar',
+    '350001_500000': '350-500k Ar',
+    'plus_500000': '> 500k Ar'
+  },
+  postes_depenses: {
+    'logement': 'Logement',
+    'transport': 'Transport',
+    'alimentation': 'Alimentation',
+    'materiel_scolaire': 'Matériel scolaire',
+    'communication': 'Communication'
+  },
+  budget_couvre_besoins: {
+    'oui_toujours': 'Oui, toujours',
+    'partiellement': 'Partiellement',
+    'non_rarement': 'Non, rarement'
+  },
+  acces_eau_potable: {
+    'permanent_bonne_qualite': 'Permanent bonne qualité',
+    'intermittent': 'Intermittent',
+    'difficile_courvee': 'Difficile/corvée',
+    'incertain_traitement': 'Incertain/traitement'
+  },
+  pratiques_economie_eau: {
+    'fermer_robinet': 'Fermer robinet',
+    'recuperer_eau': 'Récupérer eau',
+    'reparer_fuites': 'Réparer fuites',
+    'aucune': 'Aucune'
+  },
+
+  // Alimentation
+  nombre_repas_jour: {
+    '1_repas': '1 repas',
+    '2_repas': '2 repas',
+    '3_repas_ou_plus': '3+ repas'
+  },
+  lieu_repas_principaux: {
+    'maison_cuisine': 'Maison',
+    'gargote_restaurant': 'Gargote/Restaurant',
+    'restaurant_universitaire': 'Resto U.',
+    'famille_parents': 'Famille'
+  },
+  source_approvisionnement_alimentaire: {
+    'marche_local': 'Marché local',
+    'cantine_gargotes': 'Cantine/Gargotes',
+    'maison_denrees_familiales': 'Maison/Famille',
+    'supermarches_produits_transformes': 'Supermarché'
+  },
+  energie_cuisson: {
+    'charbon_bois': 'Charbon/bois',
+    'gaz_butane': 'Gaz butane',
+    'electricite': 'Électricité',
+    'bois_chauffe': 'Bois de chauffe',
+    'ne_cuisine_pas': 'Ne cuisine pas'
+  },
+  frequence_collation: {
+    'tous_les_jours': 'Tous les jours',
+    'plusieurs_fois_semaine': 'Plusieurs fois/sem',
+    'occasionnellement': 'Occasionnellement',
+    'rarement_jamais': 'Rarement/jamais'
+  },
+  depense_alimentation_jour: {
+    'moins_2000': '< 2k Ar',
+    '2000_4000': '2-4k Ar',
+    '4001_6000': '4-6k Ar',
+    'plus_6000': '> 6k Ar'
+  },
+  alimentation_equilibree: {
+    'oui_tout_a_fait': 'Oui, tout à fait',
+    'partiellement': 'Partiellement',
+    'non_pas_du_tout': 'Non, pas du tout'
+  },
+  gestion_restes_alimentaires: {
+    'conserves': 'Conservés',
+    'proches_donnes': 'Donnés',
+    'animaux_compostage': 'Animaux/Compost',
+    'ordures_menageres': 'Ordures ménagères'
+  },
+
+  // Technologie
+  equipements_numeriques: {
+    'smartphone_personnel': 'Smartphone',
+    'ordinateur_portable_fixe': 'Ordinateur',
+    'tablette_tactile': 'Tablette',
+    'aucun_equipement_personnel': 'Aucun'
+  },
+  duree_utilisation_appareil: {
+    'moins_2_ans': '< 2 ans',
+    '2_4_ans': '2-4 ans',
+    '5_ans_plus': '5+ ans',
+    'panne_totale_irreparable': 'Jusqu\'à panne'
+  },
+  reaction_panne_appareil: {
+    'reparation_technicien_local': 'Réparation technicien',
+    'reparation_soi_meme': 'Réparation soi-même',
+    'rachat_appareil_neuf': 'Rachat neuf',
+    'stockage_dormant': 'Stockage dormant'
+  },
+  elimination_equipements_electroniques: {
+    'conservation_chez_moi': 'Conservation',
+    'poubelle_ordinaire': 'Poubelle ordinaire',
+    'filiere_collecte_recyclage': 'Recyclage',
+    'revente': 'Revente'
+  },
+
+  // Vêtements
+  nombre_tenutes_semaine: {
+    '1_3': '1-3 tenues',
+    '4_6': '4-6 tenues',
+    '7_plus': '7+ tenues'
+  },
+  frequence_renouvellement_vetements: {
+    'plusieurs_fois_an': 'Plusieurs fois/an',
+    'une_fois_an': '1 fois/an',
+    '2_3_ans': '2-3 ans',
+    'usure_necessite': 'Usure/nécessité'
+  },
+  origine_achat_vetements: {
+    'neuf': 'Neuf',
+    'seconde_main': 'Seconde main',
+    'mixte': 'Mixte'
+  },
+  methode_lavage_vetements: {
+    'lavage_main': 'Lavage main',
+    'machine': 'Machine',
+    'laverie_externe': 'Laverie externe'
+  },
+  devenir_vetements_usages: {
+    'dons': 'Dons',
+    'revente': 'Revente',
+    'reutilisation': 'Réutilisation',
+    'jetes_brules': 'Jetés/Brûlés'
+  },
+
+  // Hygiène
+  produits_chimiques_utilises: {
+    'savons_gels_douche': 'Savons/Gels',
+    'cosmetiques': 'Cosmétiques',
+    'nettoyage_domestique': 'Nettoyage domestique',
+    'pharmaceutiques': 'Pharmaceutiques'
+  },
+
+  // Déchets
+  types_dechets_produits: {
+    'organiques': 'Organiques',
+    'plastiques': 'Plastiques',
+    'papiers_cartons': 'Papiers/Cartons',
+    'canettes_verre': 'Canettes/Verre',
+    'electroniques_toxiques': 'Électroniques/Toxiques'
+  },
+  contenants_reutilisables: {
+    'toujours': 'Toujours',
+    'souvent': 'Souvent',
+    'parfois': 'Parfois',
+    'jamais': 'Jamais'
+  },
+  tri_selectif: {
+    'oui_systematiquement': 'Oui systématiquement',
+    'parfois': 'Parfois',
+    'non_jamais': 'Non jamais'
+  },
+  lieu_elimination_dechets: {
+    'poubelle_publique_dediee': 'Poubelle publique',
+    'par_terre_espaces_ouverts': 'Par terre',
+    'incineration_brulement': 'Incinération/Brûlage'
+  },
+  poubelles_suffisantes_campus: {
+    'oui_tout_a_fait': 'Oui tout à fait',
+    'partiellement': 'Partiellement',
+    'non_insuffisant': 'Non insuffisant'
+  },
+  participation_actions: {
+    'oui_tout_a_fait_favorable': 'Oui tout à fait',
+    'peut_etre': 'Peut-être',
+    'non_peu_interesse': 'Non peu intéressé'
+  },
+
+  // Perception
+  perception_urgence_dechets: {
+    'urgent': 'Urgent',
+    'modere': 'Modéré',
+    'non_prioritaire': 'Non prioritaire'
   }
 }
 
-const CO2_FACTORS = { voiture: 0.19, moto: 0.10, transport_commun: 0.04, velo: 0, pied: 0, autre: 0.08 }
-
-// ── Small stats helper: build a 0..7 (or min..max) count histogram ─────
-function binCounts(values, min, max, suffix = 'j') {
-  const bins = {}
-  for (let i = min; i <= max; i++) bins[i] = 0
-  values.forEach(v => {
-    const iv = Math.min(max, Math.max(min, Math.round(v)))
-    bins[iv] = (bins[iv] || 0) + 1
-  })
-  return Object.entries(bins).map(([k, v]) => ({ name: `${k}${suffix}`, value: v }))
-}
-
 // ── Reusable chart card wrapper ────────────────────────────────────────
-// `badge` shows the effectif (n=...) directly in the card header so the
-// sample size is always visible next to the chart, not just on hover.
 function ChartCard({ title, icon: Icon, iconColor = 'text-primary', badge, children, className = '' }) {
   return (
     <div className={`bg-surface border border-text-secondary/10 rounded-2xl p-5 shadow-sm ${className}`}>
@@ -316,7 +630,6 @@ function Statistiques() {
   const [responses, setResponses] = useState([])
   const [loading, setLoading] = useState(true)
   const [isDemoData, setIsDemoData] = useState(false)
-  const [targetPopulation, setTargetPopulation] = useState(5000)
   const [activeTab, setActiveTab] = useState('tous')
   const theme = useThemeColors()
 
@@ -347,275 +660,290 @@ function Statistiques() {
   // ── Heavy aggregation ────────────────────────────────────────────────
   const stats = useMemo(() => {
     const n = responses.length || 1
-    const K = targetPopulation / n
-    const W = 36 // weeks/year
 
-    const logementCounts = {}
-    const transportCounts = {}
-    const repasTypeCounts = { maison: 0, cantine: 0, fast_food: 0, repas_rue: 0 }
-    const pcUsageCounts = {}
-    const wasteCounts = { moins_petit_sac: 0, un_sac_moyen: 0, deux_sacs_ou_plus: 0, ne_sait_pas: 0 }
-    const goutersCounts = {}
+    // Initialize all counters
+    const genreCounts = {}
+    const trancheAgeCounts = {}
+    const residenceCounts = {}
+    const loyerCounts = {}
+    const financementCounts = {}
+    const transportPrincipalCounts = {}
+    const combineTransportsCounts = { oui: 0, non: 0 }
+    const dureeTrajetCounts = {}
+    const depenseTransportCounts = {}
+    const difficultesTransportCounts = {}
+    const ledUtiliseCounts = { oui: 0, non: 0 }
+    const eteintLumieresCounts = { oui: 0, non: 0 }
+    const coupuresFrequentesCounts = { oui: 0, non: 0 }
+    const budgetCounts = {}
+    const postesDepensesCounts = {}
+    const budgetCouvreBesoinsCounts = {}
+    const accesEauCounts = {}
+    const pratiquesEauCounts = {}
+    const nombreRepasCounts = {}
+    const lieuRepasCounts = {}
+    const sourceApprovisionnementCounts = {}
+    const energieCuissonCounts = {}
+    const frequenceCollationCounts = {}
+    const depenseAlimentationCounts = {}
+    const consommationViandePoissonCounts = { oui: 0, non: 0 }
+    const fruitsLegumesLocauxCounts = { oui: 0, non: 0 }
+    const plastiqueUsageUniqueCounts = { oui: 0, non: 0 }
+    const alimentationEquilibreeCounts = {}
+    const gestionRestesCounts = {}
+    const equipementsNumeriquesCounts = {}
+    const dureeUtilisationCounts = {}
+    const rechargeMultipleCounts = { oui: 0, non: 0 }
+    const reactionPanneCounts = {}
+    const eliminationEquipementsCounts = {}
+    const nombreTenutesCounts = {}
+    const frequenceRenouvellementCounts = {}
+    const origineAchatCounts = {}
+    const fibresNaturellesCounts = { oui: 0, non: 0 }
+    const methodeLavageCounts = {}
+    const lessiveEcologiqueCounts = { oui: 0, non: 0 }
+    const sechageExterieurCounts = { oui: 0, non: 0 }
+    const repareVetementsCounts = { oui: 0, non: 0 }
+    const devenirVetementsCounts = {}
+    const produitsChimiquesCounts = {}
+    const litEtiquettesCounts = { oui: 0, non: 0 }
+    const connaitChimieVerteCounts = { oui: 0, non: 0 }
+    const procedesDurablesCounts = { oui: 0, non: 0 }
+    const favorableAteliersCounts = { oui: 0, non: 0 }
+    const typesDechetsCounts = {}
+    const contenantsReutilisablesCounts = {}
+    const triSelectifCounts = {}
+    const revendBouteillesCounts = { oui: 0, non: 0 }
+    const lieuEliminationCounts = {}
+    const connaitToxiciteCounts = { oui: 0, non: 0 }
+    const poubellesSuffisantesCounts = {}
+    const participationActionsCounts = {}
+    const perceptionUrgenceCounts = {}
 
-    // Cross-tab accumulators (n=20 → limited to binary/low-cardinality crossings)
-    const venueByLogement = {}       // logement -> { sum, count }
-    const sauteByLogement = {}       // logement -> { saute, total }
-    const distByPrimaryTransport = {} // primary transport mode -> { sum, count }
-
-    let totalDistKm = 0, totalWeeklyKm = 0, totalCo2Kg = 0
-    let sauteRepas = 0, cafeDrinkers = 0, totalCupsDay = 0
-    let totalShowers = 0, boilingCount = 0
-    let totalOutfitsWorn = 0, totalOutfitsWash = 0
-    let brushingCount = 0, lissageCount = 0
-    let pcOwners = 0, tabletOwners = 0
-    let totalPhoneCharges = 0, totalPhoneHrs = 0
-    let totalPcCharges = 0, totalPcHrs = 0
-    let totalTabletCharges = 0
-    let alcoholCount = 0, noiseCount = 0
-
-    const venueValues = []
-    const showerValues = []
-    const screenTimeScatterData = []
-
-    responses.forEach((r, idx) => {
+    responses.forEach((r) => {
       const a = r.answers || {}
 
-      // Logement
-      const log = a.logement || 'autre'
-      logementCounts[log] = (logementCounts[log] || 0) + 1
+      // Informations générales
+      if (a.genre) genreCounts[a.genre] = (genreCounts[a.genre] || 0) + 1
+      if (a.tranche_age) trancheAgeCounts[a.tranche_age] = (trancheAgeCounts[a.tranche_age] || 0) + 1
+      if (a.residence_principale) residenceCounts[a.residence_principale] = (residenceCounts[a.residence_principale] || 0) + 1
+      if (a.loyer_mensuel) loyerCounts[a.loyer_mensuel] = (loyerCounts[a.loyer_mensuel] || 0) + 1
+      if (Array.isArray(a.source_financement)) {
+        a.source_financement.forEach(s => {
+          financementCounts[s] = (financementCounts[s] || 0) + 1
+        })
+      }
 
       // Transport
-      const tList = Array.isArray(a.transport) ? a.transport : []
-      const dist = parseFloat(a.domicialisation_distance_vontovorona) || 0
-      const trips = parseInt(a.frequence_depart) || 0
-      totalDistKm += dist
-      const studentWeekKm = trips * dist * 2
-      totalWeeklyKm += studentWeekKm
+      if (a.transport_principal) transportPrincipalCounts[a.transport_principal] = (transportPrincipalCounts[a.transport_principal] || 0) + 1
+      if (a.combine_transports) combineTransportsCounts[a.combine_transports] = (combineTransportsCounts[a.combine_transports] || 0) + 1
+      if (a.duree_trajet) dureeTrajetCounts[a.duree_trajet] = (dureeTrajetCounts[a.duree_trajet] || 0) + 1
+      if (a.depense_transport_jour) depenseTransportCounts[a.depense_transport_jour] = (depenseTransportCounts[a.depense_transport_jour] || 0) + 1
+      if (Array.isArray(a.difficultes_transport)) {
+        a.difficultes_transport.forEach(d => {
+          difficultesTransportCounts[d] = (difficultesTransportCounts[d] || 0) + 1
+        })
+      }
+      if (a.led_utilise) ledUtiliseCounts[a.led_utilise] = (ledUtiliseCounts[a.led_utilise] || 0) + 1
+      if (a.eteint_lumieres_debranche) eteintLumieresCounts[a.eteint_lumieres_debranche] = (eteintLumieresCounts[a.eteint_lumieres_debranche] || 0) + 1
+      if (a.coupures_frequentes) coupuresFrequentesCounts[a.coupures_frequentes] = (coupuresFrequentesCounts[a.coupures_frequentes] || 0) + 1
 
-      tList.forEach(t => {
-        transportCounts[t] = (transportCounts[t] || 0) + 1
-        totalCo2Kg += (studentWeekKm / Math.max(tList.length, 1)) * (CO2_FACTORS[t] ?? 0.05)
-      })
-
-      // Distance moyenne selon le mode de transport principal (1er coché)
-      const primaryMode = tList[0] || 'autre'
-      if (!distByPrimaryTransport[primaryMode]) distByPrimaryTransport[primaryMode] = { sum: 0, count: 0 }
-      distByPrimaryTransport[primaryMode].sum += dist
-      distByPrimaryTransport[primaryMode].count += 1
-
-      // Fréquence de venue : histogramme + moyenne par logement
-      const venue = parseInt(a.frequence_venue) || 0
-      venueValues.push(venue)
-      if (!venueByLogement[log]) venueByLogement[log] = { sum: 0, count: 0 }
-      venueByLogement[log].sum += venue
-      venueByLogement[log].count += 1
+      // Budget & Eau
+      if (a.budget_mensuel_total) budgetCounts[a.budget_mensuel_total] = (budgetCounts[a.budget_mensuel_total] || 0) + 1
+      if (Array.isArray(a.postes_depenses)) {
+        a.postes_depenses.forEach(p => {
+          postesDepensesCounts[p] = (postesDepensesCounts[p] || 0) + 1
+        })
+      }
+      if (a.budget_couvre_besoins) budgetCouvreBesoinsCounts[a.budget_couvre_besoins] = (budgetCouvreBesoinsCounts[a.budget_couvre_besoins] || 0) + 1
+      if (a.acces_eau_potable) accesEauCounts[a.acces_eau_potable] = (accesEauCounts[a.acces_eau_potable] || 0) + 1
+      if (Array.isArray(a.pratiques_economie_eau)) {
+        a.pratiques_economie_eau.forEach(p => {
+          pratiquesEauCounts[p] = (pratiquesEauCounts[p] || 0) + 1
+        })
+      }
 
       // Alimentation
-      const skipsRepas = !!(a.repas && a.repas.saute_repas)
-      if (a.repas) {
-        if (a.repas.repas_maison) repasTypeCounts.maison++
-        if (a.repas.cantine) repasTypeCounts.cantine++
-        if (a.repas.fast_food) repasTypeCounts.fast_food++
-        if (a.repas.repas_rue) repasTypeCounts.repas_rue++
-        if (skipsRepas) sauteRepas++
-      }
-      if (!sauteByLogement[log]) sauteByLogement[log] = { saute: 0, total: 0 }
-      sauteByLogement[log].total += 1
-      if (skipsRepas) sauteByLogement[log].saute += 1
+      if (a.nombre_repas_jour) nombreRepasCounts[a.nombre_repas_jour] = (nombreRepasCounts[a.nombre_repas_jour] || 0) + 1
+      if (a.lieu_repas_principaux) lieuRepasCounts[a.lieu_repas_principaux] = (lieuRepasCounts[a.lieu_repas_principaux] || 0) + 1
+      if (a.source_approvisionnement_alimentaire) sourceApprovisionnementCounts[a.source_approvisionnement_alimentaire] = (sourceApprovisionnementCounts[a.source_approvisionnement_alimentaire] || 0) + 1
+      if (a.energie_cuisson) energieCuissonCounts[a.energie_cuisson] = (energieCuissonCounts[a.energie_cuisson] || 0) + 1
+      if (a.frequence_collation) frequenceCollationCounts[a.frequence_collation] = (frequenceCollationCounts[a.frequence_collation] || 0) + 1
+      if (a.depense_alimentation_jour) depenseAlimentationCounts[a.depense_alimentation_jour] = (depenseAlimentationCounts[a.depense_alimentation_jour] || 0) + 1
+      if (a.consommation_viande_poisson) consommationViandePoissonCounts[a.consommation_viande_poisson] = (consommationViandePoissonCounts[a.consommation_viande_poisson] || 0) + 1
+      if (a.fruits_legumes_locaux_saison) fruitsLegumesLocauxCounts[a.fruits_legumes_locaux_saison] = (fruitsLegumesLocauxCounts[a.fruits_legumes_locaux_saison] || 0) + 1
+      if (a.produits_plastique_usage_unique) plastiqueUsageUniqueCounts[a.produits_plastique_usage_unique] = (plastiqueUsageUniqueCounts[a.produits_plastique_usage_unique] || 0) + 1
+      if (a.alimentation_equilibree) alimentationEquilibreeCounts[a.alimentation_equilibree] = (alimentationEquilibreeCounts[a.alimentation_equilibree] || 0) + 1
+      if (a.gestion_restes_alimentaires) gestionRestesCounts[a.gestion_restes_alimentaires] = (gestionRestesCounts[a.gestion_restes_alimentaires] || 0) + 1
 
-      if (a.cafe_boit) { cafeDrinkers++; totalCupsDay += parseInt(a.cafe_frequence_jour) || 1 }
-      if (Array.isArray(a.gouters)) a.gouters.forEach(g => { goutersCounts[g] = (goutersCounts[g] || 0) + 1 })
+      // Technologie
+      if (Array.isArray(a.equipements_numeriques)) {
+        a.equipements_numeriques.forEach(e => {
+          equipementsNumeriquesCounts[e] = (equipementsNumeriquesCounts[e] || 0) + 1
+        })
+      }
+      if (a.duree_utilisation_appareil) dureeUtilisationCounts[a.duree_utilisation_appareil] = (dureeUtilisationCounts[a.duree_utilisation_appareil] || 0) + 1
+      if (a.recharge_appareils_plusieurs_fois_nuit) rechargeMultipleCounts[a.recharge_appareils_plusieurs_fois_nuit] = (rechargeMultipleCounts[a.recharge_appareils_plusieurs_fois_nuit] || 0) + 1
+      if (a.reaction_panne_appareil) reactionPanneCounts[a.reaction_panne_appareil] = (reactionPanneCounts[a.reaction_panne_appareil] || 0) + 1
+      if (a.elimination_equipements_electroniques) eliminationEquipementsCounts[a.elimination_equipements_electroniques] = (eliminationEquipementsCounts[a.elimination_equipements_electroniques] || 0) + 1
+
+      // Vêtements
+      if (a.nombre_tenutes_semaine) nombreTenutesCounts[a.nombre_tenutes_semaine] = (nombreTenutesCounts[a.nombre_tenutes_semaine] || 0) + 1
+      if (a.frequence_renouvellement_vetements) frequenceRenouvellementCounts[a.frequence_renouvellement_vetements] = (frequenceRenouvellementCounts[a.frequence_renouvellement_vetements] || 0) + 1
+      if (a.origine_achat_vetements) origineAchatCounts[a.origine_achat_vetements] = (origineAchatCounts[a.origine_achat_vetements] || 0) + 1
+      if (a.possede_fibres_naturelles_locales !== null) fibresNaturellesCounts[a.possede_fibres_naturelles_locales ? 'oui' : 'non'] = (fibresNaturellesCounts[a.possede_fibres_naturelles_locales ? 'oui' : 'non'] || 0) + 1
+      if (a.methode_lavage_vetements) methodeLavageCounts[a.methode_lavage_vetements] = (methodeLavageCounts[a.methode_lavage_vetements] || 0) + 1
+      if (a.lessive_ecologique_utilisee !== null) lessiveEcologiqueCounts[a.lessive_ecologique_utilisee ? 'oui' : 'non'] = (lessiveEcologiqueCounts[a.lessive_ecologique_utilisee ? 'oui' : 'non'] || 0) + 1
+      if (a.sechage_exterieur !== null) sechageExterieurCounts[a.sechage_exterieur ? 'oui' : 'non'] = (sechageExterieurCounts[a.sechage_exterieur ? 'oui' : 'non'] || 0) + 1
+      if (a.repare_vetements !== null) repareVetementsCounts[a.repare_vetements ? 'oui' : 'non'] = (repareVetementsCounts[a.repare_vetements ? 'oui' : 'non'] || 0) + 1
+      if (a.devenir_vetements_usages) devenirVetementsCounts[a.devenir_vetements_usages] = (devenirVetementsCounts[a.devenir_vetements_usages] || 0) + 1
 
       // Hygiène
-      const showers = parseInt(a.douche_frequence) || (a.douche_quotidienne ? 7 : 3)
-      totalShowers += showers
-      showerValues.push(showers)
-      if (a.eau_bouillir) boilingCount++
-      totalOutfitsWorn += parseInt(a.vetements_semaine) || 0
-      totalOutfitsWash += parseInt(a.vetements_laver_repasser) || 0
-      if (a.brushing_utilise) brushingCount++
-      if (a.lissage_utilise) lissageCount++
-
-      // Tech
-      const phoneHrs = parseFloat(a.ecrans_tel_heures_jour) || 0
-      const phoneCharges = parseInt(a.recharge_telephone_jour) || 0
-      totalPhoneCharges += phoneCharges
-      totalPhoneHrs += phoneHrs
-      screenTimeScatterData.push({ id: idx + 1, heures: phoneHrs, recharges: phoneCharges })
-
-      if (a.pc_possede) {
-        pcOwners++
-        totalPcCharges += parseInt(a.recharge_pc_frequence) || 0
-        totalPcHrs += parseFloat(a.ecrans_pc_heures_jour) || 0
-        if (Array.isArray(a.pc_usage)) a.pc_usage.forEach(u => { pcUsageCounts[u] = (pcUsageCounts[u] || 0) + 1 })
+      if (Array.isArray(a.produits_chimiques_utilises)) {
+        a.produits_chimiques_utilises.forEach(p => {
+          produitsChimiquesCounts[p] = (produitsChimiquesCounts[p] || 0) + 1
+        })
       }
-      if (a.tablette_possede) {
-        tabletOwners++
-        totalTabletCharges += parseInt(a.recharge_tablette_frequence) || 0
-      }
+      if (a.lit_etiquettes_produits !== null) litEtiquettesCounts[a.lit_etiquettes_produits ? 'oui' : 'non'] = (litEtiquettesCounts[a.lit_etiquettes_produits ? 'oui' : 'non'] || 0) + 1
+      if (a.connait_principes_chimie_verte !== null) connaitChimieVerteCounts[a.connait_principes_chimie_verte ? 'oui' : 'non'] = (connaitChimieVerteCounts[a.connait_principes_chimie_verte ? 'oui' : 'non'] || 0) + 1
+      if (a.procedes_locaux_durables !== null) procedesDurablesCounts[a.procedes_locaux_durables ? 'oui' : 'non'] = (procedesDurablesCounts[a.procedes_locaux_durables ? 'oui' : 'non'] || 0) + 1
+      if (a.favorable_ateliers_ecologiques !== null) favorableAteliersCounts[a.favorable_ateliers_ecologiques ? 'oui' : 'non'] = (favorableAteliersCounts[a.favorable_ateliers_ecologiques ? 'oui' : 'non'] || 0) + 1
 
-      // Mode de vie
-      if (a.alcool_boit) alcoholCount++
-      if (a.nuisance_sonore) noiseCount++
-      const w = a.ordures_quantite || 'un_sac_moyen'
-      wasteCounts[w] = (wasteCounts[w] || 0) + 1
+      // Déchets
+      if (Array.isArray(a.types_dechets_produits)) {
+        a.types_dechets_produits.forEach(t => {
+          typesDechetsCounts[t] = (typesDechetsCounts[t] || 0) + 1
+        })
+      }
+      if (a.utilise_contenants_reutilisables) contenantsReutilisablesCounts[a.utilise_contenants_reutilisables] = (contenantsReutilisablesCounts[a.utilise_contenants_reutilisables] || 0) + 1
+      if (a.pratique_tri_selectif) triSelectifCounts[a.pratique_tri_selectif] = (triSelectifCounts[a.pratique_tri_selectif] || 0) + 1
+      if (a.revend_bouteilles_metaux_collecteurs !== null) revendBouteillesCounts[a.revend_bouteilles_metaux_collecteurs ? 'oui' : 'non'] = (revendBouteillesCounts[a.revend_bouteilles_metaux_collecteurs ? 'oui' : 'non'] || 0) + 1
+      if (a.lieu_elimination_dechets) lieuEliminationCounts[a.lieu_elimination_dechets] = (lieuEliminationCounts[a.lieu_elimination_dechets] || 0) + 1
+      if (a.connait_toxicite_combustion_plastiques !== null) connaitToxiciteCounts[a.connait_toxicite_combustion_plastiques ? 'oui' : 'non'] = (connaitToxiciteCounts[a.connait_toxicite_combustion_plastiques ? 'oui' : 'non'] || 0) + 1
+      if (a.poubelles_suffisantes_campus) poubellesSuffisantesCounts[a.poubelles_suffisantes_campus] = (poubellesSuffisantesCounts[a.poubelles_suffisantes_campus] || 0) + 1
+      if (a.pret_a_participer_actions_environnementales) participationActionsCounts[a.pret_a_participer_actions_environnementales] = (participationActionsCounts[a.pret_a_participer_actions_environnementales] || 0) + 1
+
+      // Perception
+      if (a.perception_urgence_dechets) perceptionUrgenceCounts[a.perception_urgence_dechets] = (perceptionUrgenceCounts[a.perception_urgence_dechets] || 0) + 1
     })
 
-    // KPIs (base échantillon)
-    const avgShowers = totalShowers / n
-    const pctBoiling = boilingCount / n
+    // Helper function to build chart data
+    const buildChartData = (counts, labelMap) => {
+      return Object.entries(labelMap).map(([key, label]) => ({
+        name: label,
+        value: counts[key] || 0,
+        pct: Math.round(((counts[key] || 0) / n) * 100),
+        total: n
+      })).filter(d => d.value > 0)
+    }
 
-    // KPIs (extrapolation — indicative uniquement, n faible)
-    const annualCo2Tonnes = ((totalCo2Kg / n) * targetPopulation * W) / 1000
-    const annualWaterMLiters = (avgShowers * 50 * targetPopulation * W) / 1_000_000
-    const dailyTechKwh = ((totalPhoneCharges / n) * 0.015) + ((totalPcCharges / n) * 0.06) + ((totalTabletCharges / n) * 0.03)
-    const annualTechMWh = (dailyTechKwh * 365 * targetPopulation) / 1000
-    const annualThermalMWh = (pctBoiling * avgShowers * 1.8 * W * targetPopulation) / 1000
-    const wasteL = ((wasteCounts.moins_petit_sac * 5) + (wasteCounts.un_sac_moyen * 25) + (wasteCounts.deux_sacs_ou_plus * 50) + (wasteCounts.ne_sait_pas * 20)) / n
-    const annualWasteM3 = (wasteL * W * targetPopulation) / 1000
-
-    // ── Build chart data arrays — comptages (value) en donnée principale,
-    // le pourcentage (pct) reste disponible en info secondaire (tooltip).
-    const logementData = Object.entries(LABELS.logement).map(([k, label]) => ({
-      name: label,
-      value: logementCounts[k] || 0,
-      pct: Math.round(((logementCounts[k] || 0) / n) * 100),
-      total: n
-    })).filter(d => d.value > 0)
-
-    const transportData = Object.entries(LABELS.transport).map(([k, label]) => ({
-      name: label,
-      value: transportCounts[k] || 0,
-      pct: Math.round(((transportCounts[k] || 0) / n) * 100),
-      total: n
-    })).filter(d => d.value > 0)
-
-    const repasData = Object.entries(LABELS.repas).map(([k, label]) => ({
-      name: label,
-      value: repasTypeCounts[k] || 0,
-      pct: Math.round(((repasTypeCounts[k] || 0) / n) * 100),
-      total: n
-    }))
-
-    const pcUsageData = Object.entries(LABELS.pcUsage).map(([k, label]) => ({
-      name: label,
-      value: pcUsageCounts[k] || 0,
-      pct: Math.round(((pcUsageCounts[k] || 0) / n) * 100),
-      total: n
-    })).filter(d => d.value > 0)
-
-    const wasteData = Object.entries(LABELS.waste).map(([k, label]) => ({
-      name: label,
-      value: wasteCounts[k] || 0,
-      pct: Math.round(((wasteCounts[k] || 0) / n) * 100),
-      total: n
-    })).filter(d => d.value > 0)
-
-    const screenTimeData = [
-      { name: 'Smartphone', heures: Math.round((totalPhoneHrs / n) * 10) / 10 },
-      { name: 'Ordinateur', heures: pcOwners ? Math.round((totalPcHrs / pcOwners) * 10) / 10 : 0 },
-    ]
-
-    const equipmentData = [
-      { name: 'Smartphone', pct: 100, n, total: n },
-      { name: 'Ordinateur', pct: Math.round((pcOwners / n) * 100), n: pcOwners, total: n },
-      { name: 'Tablette', pct: Math.round((tabletOwners / n) * 100), n: tabletOwners, total: n },
-    ]
-
-    const hygieneRadarData = [
-      { metric: 'Douches/sem', value: Math.round(avgShowers * 10) / 10 },
-      { metric: 'Tenues/sem', value: Math.round((totalOutfitsWorn / n) * 10) / 10 },
-      { metric: 'Lavage/sem', value: Math.round((totalOutfitsWash / n) * 10) / 10 },
-      { metric: 'Brushing %', value: Math.round((brushingCount / n) * 100) },
-      { metric: 'Lissage %', value: Math.round((lissageCount / n) * 100) },
-      { metric: 'Eau bouillie %', value: Math.round(pctBoiling * 100) },
-    ]
-
-    const outfitsComparisonData = [
-      { name: 'Tenues portées', value: Math.round((totalOutfitsWorn / n) * 10) / 10 },
-      { name: 'Tenues lavées/repassées', value: Math.round((totalOutfitsWash / n) * 10) / 10 },
-    ]
-
-    const modeDeVieData = [
-      { name: 'Nuisance sonore', pct: Math.round((noiseCount / n) * 100), value: noiseCount, total: n },
-      { name: 'Alcool', pct: Math.round((alcoholCount / n) * 100), value: alcoholCount, total: n },
-      { name: 'Saute repas', pct: Math.round((sauteRepas / n) * 100), value: sauteRepas, total: n },
-      { name: 'Eau bouillie', pct: Math.round(pctBoiling * 100), value: boilingCount, total: n },
-    ]
-
-    // Histogrammes de distribution (0 à 7 jours/semaine)
-    const venueHistogramData = binCounts(venueValues, 0, 7).map(d => ({
-      ...d, pct: Math.round((d.value / n) * 100), total: n
-    }))
-    const showerHistogramData = binCounts(showerValues, 0, 7).map(d => ({
-      ...d, pct: Math.round((d.value / n) * 100), total: n
-    }))
-
-    // Distance moyenne selon le mode de transport principal
-    const distByTransportData = Object.entries(distByPrimaryTransport)
-      .map(([k, v]) => ({
-        name: LABELS.transport[k] || k,
-        moyenne: Math.round((v.sum / v.count) * 10) / 10,
-        n: v.count
+    const buildBinaryChartData = (counts, labelMap) => {
+      return Object.entries(labelMap).map(([key, label]) => ({
+        name: label,
+        value: counts[key] || 0,
+        pct: Math.round(((counts[key] || 0) / n) * 100),
+        total: n
       }))
-      .sort((a, b) => b.moyenne - a.moyenne)
-
-    // Fréquence de venue moyenne selon le logement
-    const venueByLogementData = Object.entries(venueByLogement).map(([k, v]) => ({
-      name: LABELS.logement[k] || k,
-      moyenne: Math.round((v.sum / v.count) * 10) / 10,
-      n: v.count
-    }))
-
-    // Étudiants qui sautent des repas, selon le logement
-    const sauteRepasByLogementData = Object.entries(sauteByLogement).map(([k, v]) => ({
-      name: LABELS.logement[k] || k,
-      value: v.saute,
-      pct: Math.round((v.saute / v.total) * 100),
-      total: v.total
-    }))
+    }
 
     return {
-      n, K,
-      annualCo2Tonnes: Math.round(annualCo2Tonnes * 10) / 10,
-      annualWaterMLiters: Math.round(annualWaterMLiters * 10) / 10,
-      totalAnnualEnergyMWh: Math.round((annualTechMWh + annualThermalMWh) * 10) / 10,
-      annualWasteM3: Math.round(annualWasteM3),
-      avgDistKm: Math.round((totalDistKm / n) * 10) / 10,
-      avgWeeklyKm: Math.round((totalWeeklyKm / n) * 10) / 10,
-      sauteRepasCount: sauteRepas,
-      pctSauteRepas: Math.round((sauteRepas / n) * 100),
-      cafeDrinkersCount: cafeDrinkers,
-      pctCafeDrinkers: Math.round((cafeDrinkers / n) * 100),
-      avgCoffee: cafeDrinkers ? Math.round((totalCupsDay / cafeDrinkers) * 10) / 10 : 0,
-      annualCoffee: Math.round((totalCupsDay / n) * 365 * targetPopulation),
-      pcOwnersCount: pcOwners,
-      pctPcOwner: Math.round((pcOwners / n) * 100),
-      tabletOwnersCount: tabletOwners,
-      pctTabletOwner: Math.round((tabletOwners / n) * 100),
-      logementData, transportData, repasData, pcUsageData, wasteData,
-      screenTimeData, equipmentData, hygieneRadarData, modeDeVieData,
-      outfitsComparisonData, venueHistogramData, showerHistogramData,
-      distByTransportData, venueByLogementData, sauteRepasByLogementData,
-      screenTimeScatterData
+      n,
+      // Informations générales
+      genreData: buildChartData(genreCounts, LABELS.genre),
+      trancheAgeData: buildChartData(trancheAgeCounts, LABELS.tranche_age),
+      residenceData: buildChartData(residenceCounts, LABELS.residence_principale),
+      loyerData: buildChartData(loyerCounts, LABELS.loyer_mensuel),
+      financementData: buildChartData(financementCounts, LABELS.source_financement),
+
+      // Transport
+      transportPrincipalData: buildChartData(transportPrincipalCounts, LABELS.transport_principal),
+      combineTransportsData: buildBinaryChartData(combineTransportsCounts, { oui: 'Oui', non: 'Non' }),
+      dureeTrajetData: buildChartData(dureeTrajetCounts, LABELS.duree_trajet),
+      depenseTransportData: buildChartData(depenseTransportCounts, LABELS.depense_transport_jour),
+      difficultesTransportData: buildChartData(difficultesTransportCounts, LABELS.difficultes_transport),
+      ledUtiliseData: buildBinaryChartData(ledUtiliseCounts, { oui: 'Oui', non: 'Non' }),
+      eteintLumieresData: buildBinaryChartData(eteintLumieresCounts, { oui: 'Oui', non: 'Non' }),
+      coupuresFrequentesData: buildBinaryChartData(coupuresFrequentesCounts, { oui: 'Oui', non: 'Non' }),
+
+      // Budget & Eau
+      budgetData: buildChartData(budgetCounts, LABELS.budget_mensuel_total),
+      postesDepensesData: buildChartData(postesDepensesCounts, LABELS.postes_depenses),
+      budgetCouvreBesoinsData: buildChartData(budgetCouvreBesoinsCounts, LABELS.budget_couvre_besoins),
+      accesEauData: buildChartData(accesEauCounts, LABELS.acces_eau_potable),
+      pratiquesEauData: buildChartData(pratiquesEauCounts, LABELS.pratiques_economie_eau),
+
+      // Alimentation
+      nombreRepasData: buildChartData(nombreRepasCounts, LABELS.nombre_repas_jour),
+      lieuRepasData: buildChartData(lieuRepasCounts, LABELS.lieu_repas_principaux),
+      sourceApprovisionnementData: buildChartData(sourceApprovisionnementCounts, LABELS.source_approvisionnement_alimentaire),
+      energieCuissonData: buildChartData(energieCuissonCounts, LABELS.energie_cuisson),
+      frequenceCollationData: buildChartData(frequenceCollationCounts, LABELS.frequence_collation),
+      depenseAlimentationData: buildChartData(depenseAlimentationCounts, LABELS.depense_alimentation_jour),
+      consommationViandePoissonData: buildBinaryChartData(consommationViandePoissonCounts, { oui: 'Oui', non: 'Non' }),
+      fruitsLegumesLocauxData: buildBinaryChartData(fruitsLegumesLocauxCounts, { oui: 'Oui', non: 'Non' }),
+      plastiqueUsageUniqueData: buildBinaryChartData(plastiqueUsageUniqueCounts, { oui: 'Oui', non: 'Non' }),
+      alimentationEquilibreeData: buildChartData(alimentationEquilibreeCounts, LABELS.alimentation_equilibree),
+      gestionRestesData: buildChartData(gestionRestesCounts, LABELS.gestion_restes_alimentaires),
+
+      // Technologie
+      equipementsNumeriquesData: buildChartData(equipementsNumeriquesCounts, LABELS.equipements_numeriques),
+      dureeUtilisationData: buildChartData(dureeUtilisationCounts, LABELS.duree_utilisation_appareil),
+      rechargeMultipleData: buildBinaryChartData(rechargeMultipleCounts, { oui: 'Oui', non: 'Non' }),
+      reactionPanneData: buildChartData(reactionPanneCounts, LABELS.reaction_panne_appareil),
+      eliminationEquipementsData: buildChartData(eliminationEquipementsCounts, LABELS.elimination_equipements_electroniques),
+
+      // Vêtements
+      nombreTenutesData: buildChartData(nombreTenutesCounts, LABELS.nombre_tenutes_semaine),
+      frequenceRenouvellementData: buildChartData(frequenceRenouvellementCounts, LABELS.frequence_renouvellement_vetements),
+      origineAchatData: buildChartData(origineAchatCounts, LABELS.origine_achat_vetements),
+      fibresNaturellesData: buildBinaryChartData(fibresNaturellesCounts, { oui: 'Oui', non: 'Non' }),
+      methodeLavageData: buildChartData(methodeLavageCounts, LABELS.methode_lavage_vetements),
+      lessiveEcologiqueData: buildBinaryChartData(lessiveEcologiqueCounts, { oui: 'Oui', non: 'Non' }),
+      sechageExterieurData: buildBinaryChartData(sechageExterieurCounts, { oui: 'Oui', non: 'Non' }),
+      repareVetementsData: buildBinaryChartData(repareVetementsCounts, { oui: 'Oui', non: 'Non' }),
+      devenirVetementsData: buildChartData(devenirVetementsCounts, LABELS.devenir_vetements_usages),
+
+      // Hygiène
+      produitsChimiquesData: buildChartData(produitsChimiquesCounts, LABELS.produits_chimiques_utilises),
+      litEtiquettesData: buildBinaryChartData(litEtiquettesCounts, { oui: 'Oui', non: 'Non' }),
+      connaitChimieVerteData: buildBinaryChartData(connaitChimieVerteCounts, { oui: 'Oui', non: 'Non' }),
+      procedesDurablesData: buildBinaryChartData(procedesDurablesCounts, { oui: 'Oui', non: 'Non' }),
+      favorableAteliersData: buildBinaryChartData(favorableAteliersCounts, { oui: 'Oui', non: 'Non' }),
+
+      // Déchets
+      typesDechetsData: buildChartData(typesDechetsCounts, LABELS.types_dechets_produits),
+      contenantsReutilisablesData: buildChartData(contenantsReutilisablesCounts, LABELS.contenants_reutilisables),
+      triSelectifData: buildChartData(triSelectifCounts, LABELS.tri_selectif),
+      revendBouteillesData: buildBinaryChartData(revendBouteillesCounts, { oui: 'Oui', non: 'Non' }),
+      lieuEliminationData: buildChartData(lieuEliminationCounts, LABELS.lieu_elimination_dechets),
+      connaitToxiciteData: buildBinaryChartData(connaitToxiciteCounts, { oui: 'Oui', non: 'Non' }),
+      poubellesSuffisantesData: buildChartData(poubellesSuffisantesCounts, LABELS.poubelles_suffisantes_campus),
+      participationActionsData: buildChartData(participationActionsCounts, LABELS.participation_actions),
+
+      // Perception
+      perceptionUrgenceData: buildChartData(perceptionUrgenceCounts, LABELS.perception_urgence_dechets)
     }
-  }, [responses, targetPopulation])
+  }, [responses])
 
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-2 md:px-0">
-        <LoadingSpinner message="Calcul des statistiques et extrapolations..." />
+        <LoadingSpinner message="Chargement des statistiques..." />
       </div>
     )
   }
 
   const TABS = [
     { id: 'tous', label: 'Vue d\'ensemble' },
-    { id: 'transport', label: 'Transport & Logement' },
+    { id: 'generales', label: 'Informations Générales' },
+    { id: 'transport', label: 'Transport & Énergie' },
+    { id: 'budget', label: 'Budget & Eau' },
     { id: 'alimentation', label: 'Alimentation' },
-    { id: 'hygiene', label: 'Hygiène & Énergie' },
     { id: 'technologie', label: 'Technologie' },
-    { id: 'environnement', label: 'Environnement' }
+    { id: 'vetements', label: 'Vêtements' },
+    { id: 'hygiene', label: 'Hygiène' },
+    { id: 'dechets', label: 'Déchets' },
+    { id: 'perception', label: 'Perception Campus' }
   ]
 
   const axisStyle = { fontSize: 11, fill: theme.textSecondary }
@@ -628,94 +956,35 @@ function Statistiques() {
         <div>
           <div className="flex items-center gap-3">
             <TrendingUp className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl md:text-3xl font-bold text-text-primary">Statistiques & Extrapolations</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-text-primary">Statistiques CampusPulse</h1>
           </div>
           <p className="text-text-secondary text-sm mt-1">
-            Analyse de l'échantillon d'enquête CampusPulse (n = {stats.n}).
+            Analyse de l'échantillon d'enquête (n = {stats.n}).
           </p>
         </div>
         {isDemoData && (
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-warning/10 text-warning border border-warning/20 text-xs font-medium">
             <Info className="w-4 h-4" />
-            <span>Données d'illustration (échantillon de test)</span>
+            <span>Données d'illustration</span>
           </div>
         )}
       </div>
 
-      {/* ── Vue d'ensemble de l'échantillon (comptages bruts, pas d'extrapolation) ── */}
+      {/* ── Vue d'ensemble de l'échantillon ── */}
       <SectionHeader icon={Users} title="Vue d'Ensemble de l'Échantillon" color="text-primary" />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <KpiCard icon={Users} color="text-primary" bg="bg-primary/10"
           label="Répondants" value={stats.n} unit="étudiant(e)s"
-          sub="Taille actuelle de l'échantillon (cible ~20)" />
-        <KpiCard icon={MapPin} color="text-secondary" bg="bg-secondary/10"
-          label="Distance Moyenne" value={stats.avgDistKm} unit="km"
-          sub="Domicile → campus Vontovorona" />
-        <KpiCard icon={ShieldAlert} color="text-danger" bg="bg-danger/10"
-          label="Sautent un Repas" value={`${stats.sauteRepasCount}/${stats.n}`} unit=""
-          sub={`${stats.pctSauteRepas}% de l'échantillon`} />
-        <KpiCard icon={Clock} color="text-warning" bg="bg-warning/10"
-          label="Écran Téléphone" value={stats.screenTimeData[0]?.heures ?? 0} unit="h/jour"
-          sub="Moyenne quotidienne déclarée" />
-      </div>
-
-      {/* ── Extrapolation controller ────────────────────────── */}
-      <div className="bg-surface border border-primary/20 rounded-2xl p-5 md:p-6 mb-3 shadow-sm">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-1 max-w-xl">
-            <div className="flex items-center gap-2 text-primary font-semibold text-sm">
-              <Sliders className="w-4 h-4" />
-              Simulateur de Population
-            </div>
-            <p className="text-xs text-text-secondary">
-              Ajustez l'effectif total du campus pour projeter des ordres de grandeur d'impact à partir de l'échantillon de {stats.n} répondant(s).
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row items-center gap-4 bg-bg/80 border border-text-secondary/10 p-4 rounded-xl">
-            <div className="text-center sm:text-left">
-              <div className="text-2xl font-extrabold text-primary">
-                {targetPopulation.toLocaleString()}
-              </div>
-              <div className="text-[11px] text-text-secondary">
-                étudiants · facteur ×{stats.K.toFixed(1)}
-              </div>
-            </div>
-            <div className="w-full sm:w-48 space-y-1">
-              <input
-                type="range" min="500" max="20000" step="250"
-                value={targetPopulation}
-                onChange={(e) => setTargetPopulation(Number(e.target.value))}
-                className="w-full accent-primary cursor-pointer h-2 bg-text-secondary/20 rounded-lg"
-              />
-              <div className="flex justify-between text-[10px] text-text-secondary font-mono">
-                <span>500</span><span>10k</span><span>20k</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="mt-4 flex items-start gap-2 bg-warning/10 border border-warning/20 rounded-lg p-3">
-          <Info className="w-4 h-4 text-warning shrink-0 mt-0.5" />
-          <p className="text-[11px] text-text-secondary leading-relaxed">
-            Projection indicative uniquement : avec un échantillon de n = {stats.n}, les totaux ci-dessous illustrent un ordre de grandeur
-            et ne constituent pas une estimation statistiquement robuste. Se référer en priorité aux comptages de l'échantillon ci-dessus.
-          </p>
-        </div>
-      </div>
-
-      {/* ── KPI cards extrapolées ─────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <KpiCard icon={Car} color="text-danger" bg="bg-danger/10"
-          label="CO₂ Transports" value={stats.annualCo2Tonnes} unit="t CO₂/an"
-          sub={`${stats.avgWeeklyKm} km/sem/étudiant`} />
-        <KpiCard icon={Droplet} color="text-primary" bg="bg-primary/10"
-          label="Eau Hygiène" value={stats.annualWaterMLiters} unit="M. litres/an"
-          sub="Pour les douches uniquement" />
-        <KpiCard icon={Zap} color="text-warning" bg="bg-warning/10"
-          label="Énergie" value={stats.totalAnnualEnergyMWh} unit="MWh/an"
-          sub="Tech + chauffage eau" />
-        <KpiCard icon={Trash2} color="text-secondary" bg="bg-secondary/10"
-          label="Déchets" value={stats.annualWasteM3} unit="m³/an"
-          sub="Ordures ménagères solides" />
+          sub="Taille de l'échantillon" />
+        <KpiCard icon={User} color="text-secondary" bg="bg-secondary/10"
+          label="Répartition Genre" value={stats.genreData[0]?.pct || 0} unit="%"
+          sub={stats.genreData[0]?.name || ''} />
+        <KpiCard icon={Home} color="text-warning" bg="bg-warning/10"
+          label="Logement Principal" value={stats.residenceData[0]?.pct || 0} unit="%"
+          sub={stats.residenceData[0]?.name || ''} />
+        <KpiCard icon={Laptop} color="text-danger" bg="bg-danger/10"
+          label="Équipements Numériques" value={stats.equipementsNumeriquesData[0]?.pct || 0} unit="%"
+          sub={stats.equipementsNumeriquesData[0]?.name || ''} />
       </div>
 
       {/* ── Tabs ────────────────────────────────────────────── */}
@@ -734,23 +1003,45 @@ function Statistiques() {
       </div>
 
       {/* ═══════════════════════════════════════════════════════
-          SECTION 1 — TRANSPORT & LOGEMENT
+          SECTION 1 — INFORMATIONS GÉNÉRALES
           ═══════════════════════════════════════════════════════ */}
-      {(activeTab === 'tous' || activeTab === 'transport') && (
+      {(activeTab === 'tous' || activeTab === 'generales') && (
         <section className="mb-10">
-          <SectionHeader icon={Car} title="Transport & Logement" />
+          <SectionHeader icon={User} title="Informations Générales" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/* Bar (ex-pie): Logement */}
-            <ChartCard title="Répartition des Logements" icon={Home} badge={`n=${stats.n}`}>
+            <ChartCard title="Répartition par Genre" icon={User} badge={`n=${stats.n}`}>
               <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={stats.logementData} layout="vertical" margin={{ left: 10 }}>
+                <BarChart data={stats.genreData} layout="vertical" margin={{ left: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
                   <XAxis type="number" tick={axisStyle} allowDecimals={false} />
-                  <YAxis type="category" dataKey="name" width={110} tick={axisStyle} />
+                  <YAxis type="category" dataKey="name" width={80} tick={axisStyle} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="value" name="Étudiants" radius={[0, 6, 6, 0]} barSize={20}>
-                    {stats.logementData.map((_, i) => (
+                  <Bar dataKey="value" name="Étudiants" radius={[0, 6, 6, 0]} barSize={30} fill={theme.primary} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Répartition par Tranche d'Âge" icon={User} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.trancheAgeData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-15} textAnchor="end" height={45} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={28} fill={theme.secondary} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Type de Logement" icon={Home} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.residenceData} layout="vertical" margin={{ left: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis type="number" tick={axisStyle} allowDecimals={false} />
+                  <YAxis type="category" dataKey="name" width={100} tick={axisStyle} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[0, 6, 6, 0]} barSize={25} fill={theme.warning}>
+                    {stats.residenceData.map((_, i) => (
                       <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                     ))}
                   </Bar>
@@ -758,16 +1049,106 @@ function Statistiques() {
               </ResponsiveContainer>
             </ChartCard>
 
-            {/* Bar: Transport (multi-select) */}
-            <ChartCard title="Modes de Transport Utilisés" icon={Car} badge={`n=${stats.n}`}>
+            <ChartCard title="Loyer Mensuel" icon={Wallet} badge={`n=${stats.n}`}>
               <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={stats.transportData} layout="vertical" margin={{ left: 10 }}>
+                <BarChart data={stats.loyerData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-20} textAnchor="end" height={50} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={26} fill={theme.danger}>
+                    {stats.loyerData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Sources de Financement" icon={Wallet} badge={`n=${stats.n}`} className="md:col-span-2">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={stats.financementData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.primary}>
+                    {stats.financementData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <p className="text-[11px] text-text-secondary mt-2">Choix multiple : la somme peut dépasser n.</p>
+            </ChartCard>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 2 — TRANSPORT & ÉNERGIE
+          ═══════════════════════════════════════════════════════ */}
+      {(activeTab === 'tous' || activeTab === 'transport') && (
+        <section className="mb-10">
+          <SectionHeader icon={Car} title="Transport & Énergie" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ChartCard title="Mode de Transport Principal" icon={Car} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.transportPrincipalData} layout="vertical" margin={{ left: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
                   <XAxis type="number" tick={axisStyle} allowDecimals={false} />
-                  <YAxis type="category" dataKey="name" width={130} tick={axisStyle} />
+                  <YAxis type="category" dataKey="name" width={100} tick={axisStyle} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="value" name="Étudiants" radius={[0, 6, 6, 0]} barSize={18}>
-                    {stats.transportData.map((_, i) => (
+                  <Bar dataKey="value" name="Étudiants" radius={[0, 6, 6, 0]} barSize={22} fill={theme.primary}>
+                    {stats.transportPrincipalData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Durée du Trajet" icon={MapPin} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.dureeTrajetData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-15} textAnchor="end" height={45} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={28} fill={theme.secondary}>
+                    {stats.dureeTrajetData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Dépenses Journalières de Transport" icon={Wallet} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.depenseTransportData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={30} fill={theme.warning}>
+                    {stats.depenseTransportData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Difficultés de Transport" icon={Car} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.difficultesTransportData} layout="vertical" margin={{ left: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis type="number" tick={axisStyle} allowDecimals={false} />
+                  <YAxis type="category" dataKey="name" width={110} tick={axisStyle} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[0, 6, 6, 0]} barSize={20} fill={theme.danger}>
+                    {stats.difficultesTransportData.map((_, i) => (
                       <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                     ))}
                   </Bar>
@@ -776,256 +1157,55 @@ function Statistiques() {
               <p className="text-[11px] text-text-secondary mt-2">Choix multiple : la somme peut dépasser n.</p>
             </ChartCard>
 
-            {/* Histogramme : fréquence de venue */}
-            <ChartCard title="Fréquence de Venue au Campus" icon={BarChart3} badge={`n=${stats.n}`}>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={stats.venueHistogramData} margin={{ top: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
-                  <XAxis dataKey="name" tick={axisStyle} />
-                  <YAxis tick={axisStyle} allowDecimals={false} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={26} fill={theme.primary} />
-                </BarChart>
-              </ResponsiveContainer>
-              <p className="text-[11px] text-text-secondary mt-2">Distribution du nombre de jours/semaine sur le campus.</p>
-            </ChartCard>
-
-            {/* Distance moyenne selon mode de transport principal */}
-            <ChartCard title="Distance Domicile-Campus par Mode de Transport" icon={MapPin} badge={`n=${stats.n}`}>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={stats.distByTransportData} margin={{ top: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
-                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-15} textAnchor="end" height={55} />
-                  <YAxis tick={axisStyle} unit="km" />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="moyenne" name="Distance moy. (km)" radius={[6, 6, 0, 0]} barSize={30} fill={theme.secondary} />
-                </BarChart>
-              </ResponsiveContainer>
-              <p className="text-[11px] text-text-secondary mt-2">Mode de transport principal (1er coché) — voir n par groupe au survol.</p>
-            </ChartCard>
-
-            {/* Croisement : fréquence de venue moyenne selon logement */}
-            <ChartCard title="Venue Moyenne au Campus selon le Logement" icon={GitCompare} badge={`n=${stats.n}`} className="md:col-span-2">
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={stats.venueByLogementData} margin={{ top: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
-                  <XAxis dataKey="name" tick={axisStyle} />
-                  <YAxis tick={axisStyle} unit="j" />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="moyenne" name="Jours/semaine (moy.)" radius={[6, 6, 0, 0]} barSize={36} fill={theme.primary} />
-                </BarChart>
-              </ResponsiveContainer>
-              <p className="text-[11px] text-text-secondary mt-2">
-                Effectifs par sous-groupe faibles (n petit) — à lire comme tendance, pas comme résultat statistiquement tranché.
-              </p>
-            </ChartCard>
-          </div>
-        </section>
-      )}
-
-      {/* ═══════════════════════════════════════════════════════
-          SECTION 2 — ALIMENTATION
-          ═══════════════════════════════════════════════════════ */}
-      {(activeTab === 'tous' || activeTab === 'alimentation') && (
-        <section className="mb-10">
-          <SectionHeader icon={Utensils} title="Alimentation, Vulnérabilité & Café" color="text-warning" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-            {/* Bar: Repas types */}
-            <ChartCard title="Types de Restauration" icon={Utensils} iconColor="text-warning" badge={`n=${stats.n}`}>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={stats.repasData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
-                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-20} textAnchor="end" height={50} />
-                  <YAxis tick={axisStyle} allowDecimals={false} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={28} fill={theme.warning} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartCard>
-
-            {/* Vulnerability indicator */}
-            <ChartCard title="Précarité Alimentaire" icon={ShieldAlert} iconColor="text-danger">
-              <div className="flex flex-col items-center justify-center h-[220px] gap-3">
-                <div className="relative w-28 h-28">
-                  <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-                    <circle cx="60" cy="60" r="50" stroke={theme.bg} strokeWidth="12" fill="none" />
-                    <circle cx="60" cy="60" r="50" stroke={theme.danger} strokeWidth="12" fill="none"
-                      strokeDasharray={`${stats.pctSauteRepas * 3.14} 314`}
-                      strokeLinecap="round" className="transition-all duration-700"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl font-black text-danger">{stats.pctSauteRepas}%</span>
-                  </div>
-                </div>
-                <p className="text-xs text-text-secondary text-center leading-relaxed max-w-[200px]">
-                  <span className="font-semibold text-danger">{stats.sauteRepasCount}/{stats.n}</span> étudiant(e)s de l'échantillon
-                  déclarent <span className="font-semibold text-danger">sauter des repas</span>.
-                </p>
-              </div>
-            </ChartCard>
-
-            {/* Coffee */}
-            <ChartCard title="Consommation de Café" icon={Coffee} iconColor="text-warning">
-              <div className="space-y-4 mt-2">
-                <div className="flex items-center justify-between bg-bg p-3 rounded-xl">
-                  <span className="text-xs text-text-secondary">Buveurs de café</span>
-                  <span className="text-lg font-bold text-warning">{stats.cafeDrinkersCount}/{stats.n} <span className="text-xs font-normal">({stats.pctCafeDrinkers}%)</span></span>
-                </div>
-                <div className="flex items-center justify-between bg-bg p-3 rounded-xl">
-                  <span className="text-xs text-text-secondary">Tasses / jour / consommateur</span>
-                  <span className="text-lg font-bold text-warning">{stats.avgCoffee}</span>
-                </div>
-                <div className="bg-warning/10 border border-warning/20 p-4 rounded-xl text-center">
-                  <div className="text-[11px] text-text-secondary font-medium">Volume Annuel Projeté (indicatif)</div>
-                  <div className="text-xl font-extrabold text-warning">
-                    {stats.annualCoffee.toLocaleString()} <span className="text-xs font-normal text-text-secondary">tasses/an</span>
-                  </div>
-                </div>
-              </div>
-            </ChartCard>
-
-            {/* Croisement : saute repas selon logement */}
-            <ChartCard title="Repas Sautés selon le Logement" icon={GitCompare} badge={`n=${stats.n}`} className="md:col-span-3">
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={stats.sauteRepasByLogementData} margin={{ top: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
-                  <XAxis dataKey="name" tick={axisStyle} />
-                  <YAxis tick={axisStyle} allowDecimals={false} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="value" name="Sautent un repas" radius={[6, 6, 0, 0]} barSize={36} fill={theme.danger} />
-                </BarChart>
-              </ResponsiveContainer>
-              <p className="text-[11px] text-text-secondary mt-2">
-                Effectif par type de logement souvent très faible (n ≤ 5) — indicateur à confirmer avec plus de réponses.
-              </p>
-            </ChartCard>
-          </div>
-        </section>
-      )}
-
-      {/* ═══════════════════════════════════════════════════════
-          SECTION 3 — HYGIÈNE & ÉNERGIE
-          ═══════════════════════════════════════════════════════ */}
-      {(activeTab === 'tous' || activeTab === 'hygiene') && (
-        <section className="mb-10">
-          <SectionHeader icon={Droplet} title="Hygiène, Eau & Vêtements" color="text-primary" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/* Radar: Hygiène overview */}
-            <ChartCard title="Profil Hygiène Moyen" icon={Droplet} badge={`n=${stats.n}`}>
-              <ResponsiveContainer width="100%" height={300}>
-                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={stats.hygieneRadarData}>
-                  <PolarGrid stroke={theme.textSecondary + '30'} />
-                  <PolarAngleAxis dataKey="metric" tick={{ fontSize: 10, fill: theme.textSecondary }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={{ fontSize: 9, fill: theme.textSecondary }} />
-                  <Radar name="Moyenne" dataKey="value" stroke={theme.primary} fill={theme.primary} fillOpacity={0.2} strokeWidth={2} />
-                  <Tooltip content={<CustomTooltip />} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </ChartCard>
-
-            {/* Clothing & Hair stats */}
-            <ChartCard title="Vêtements & Soins Capillaires" icon={Shirt} iconColor="text-secondary">
-              <div className="space-y-3">
-                {stats.hygieneRadarData.map((d, i) => (
-                  <div key={i} className="space-y-1">
-                    <div className="flex justify-between text-xs font-medium text-text-primary">
-                      <span>{d.metric}</span>
-                      <span className="text-text-secondary font-mono">{d.value}</span>
-                    </div>
-                    <div className="w-full h-2 bg-bg rounded-full overflow-hidden">
-                      <div className="h-full bg-secondary rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(d.value, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ChartCard>
-
-            {/* Histogramme : fréquence de douche */}
-            <ChartCard title="Fréquence de Douche" icon={BarChart3} badge={`n=${stats.n}`}>
+            <ChartCard title="Utilisation LED" icon={Lightbulb} badge={`n=${stats.n}`}>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={stats.showerHistogramData} margin={{ top: 10 }}>
+                <BarChart data={stats.ledUtiliseData} margin={{ top: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
                   <XAxis dataKey="name" tick={axisStyle} />
                   <YAxis tick={axisStyle} allowDecimals={false} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={26} fill={theme.primary} />
-                </BarChart>
-              </ResponsiveContainer>
-              <p className="text-[11px] text-text-secondary mt-2">Distribution du nombre de douches/semaine.</p>
-            </ChartCard>
-
-            {/* Comparaison : tenues portées vs lavées/repassées */}
-            <ChartCard title="Tenues Portées vs Lavées/Repassées" icon={Shirt} iconColor="text-secondary" badge={`n=${stats.n}`}>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={stats.outfitsComparisonData} margin={{ top: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
-                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={45} />
-                  <YAxis tick={axisStyle} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="value" name="Moyenne/semaine" radius={[6, 6, 0, 0]} barSize={56}>
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.primary}>
                     <Cell fill={theme.primary} />
-                    <Cell fill={theme.secondary} />
+                    <Cell fill={theme.textSecondary} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-              <p className="text-[11px] text-text-secondary mt-2 text-center">
-                Écart moyen : {Math.round((stats.outfitsComparisonData[0].value - stats.outfitsComparisonData[1].value) * 10) / 10} tenue(s)/semaine non lavées ou repassées.
-              </p>
+            </ChartCard>
+
+            <ChartCard title="Coupures Fréquentes" icon={Zap} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.coupuresFrequentesData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.warning}>
+                    <Cell fill={theme.warning} />
+                    <Cell fill={theme.textSecondary} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </ChartCard>
           </div>
         </section>
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          SECTION 4 — TECHNOLOGIE
+          SECTION 3 — BUDGET & EAU
           ═══════════════════════════════════════════════════════ */}
-      {(activeTab === 'tous' || activeTab === 'technologie') && (
+      {(activeTab === 'tous' || activeTab === 'budget') && (
         <section className="mb-10">
-          <SectionHeader icon={Laptop} title="Technologie & Temps d'Écran" color="text-primary" />
+          <SectionHeader icon={Wallet} title="Budget & Eau" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/* Bar: Screen time */}
-            <ChartCard title="Temps d'Écran Quotidien Moyen" icon={Clock} badge={`n=${stats.n}`}>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={stats.screenTimeData} margin={{ top: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
-                  <XAxis dataKey="name" tick={axisStyle} />
-                  <YAxis tick={axisStyle} unit="h" />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="heures" name="Heures/jour" radius={[6, 6, 0, 0]} barSize={48}>
-                    <Cell fill={theme.primary} />
-                    <Cell fill={CHART_COLORS[4]} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-
-              {/* Equipment rates */}
-              <div className="grid grid-cols-3 gap-3 mt-4 text-center text-xs">
-                {stats.equipmentData.map((d, i) => (
-                  <div key={i} className="bg-bg rounded-xl p-2.5">
-                    <div className="text-text-secondary">{d.name}</div>
-                    <div className="text-lg font-extrabold text-primary">{d.pct}%</div>
-                    <div className="text-[10px] text-text-secondary font-mono">{d.n}/{d.total}</div>
-                  </div>
-                ))}
-              </div>
-            </ChartCard>
-
-            {/* Bar (ex-pie): PC usage */}
-            <ChartCard title="Usages Principaux de l'Ordinateur" icon={Tv} badge={`n=${stats.pcOwnersCount} (possesseurs de PC)`}>
+            <ChartCard title="Budget Mensuel Total" icon={Wallet} badge={`n=${stats.n}`}>
               <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={stats.pcUsageData} layout="vertical" margin={{ left: 10 }}>
+                <BarChart data={stats.budgetData} margin={{ top: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
-                  <XAxis type="number" tick={axisStyle} allowDecimals={false} />
-                  <YAxis type="category" dataKey="name" width={120} tick={axisStyle} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-15} textAnchor="end" height={45} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="value" name="Étudiants" radius={[0, 6, 6, 0]} barSize={18}>
-                    {stats.pcUsageData.map((_, i) => (
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={28} fill={theme.primary}>
+                    {stats.budgetData.map((_, i) => (
                       <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                     ))}
                   </Bar>
@@ -1033,60 +1213,743 @@ function Statistiques() {
               </ResponsiveContainer>
             </ChartCard>
 
-            {/* Scatter : écran vs recharges téléphone */}
-            <ChartCard title="Temps d'Écran vs Recharges (Téléphone)" icon={Clock} badge={`n=${stats.n}`} className="md:col-span-2">
-              <ResponsiveContainer width="100%" height={260}>
-                <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
+            <ChartCard title="Postes de Dépenses Principaux" icon={Wallet} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.postesDepensesData} margin={{ top: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
-                  <XAxis type="number" dataKey="heures" name="Écran" unit="h/j" tick={axisStyle} />
-                  <YAxis type="number" dataKey="recharges" name="Recharges" unit="/j" tick={axisStyle} allowDecimals={false} />
-                  <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
-                  <Scatter name="Étudiant" data={stats.screenTimeScatterData} fill={theme.primary} />
-                </ScatterChart>
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.secondary}>
+                    {stats.postesDepensesData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
               </ResponsiveContainer>
-              <p className="text-[11px] text-text-secondary mt-2">
-                Chaque point = un·e étudiant·e. Seul croisement numérique-numérique du jeu de données : teste si plus d'écran va avec plus de recharges.
-              </p>
+              <p className="text-[11px] text-text-secondary mt-2">Choix multiple : chaque étudiant sélectionne 2 postes.</p>
+            </ChartCard>
+
+            <ChartCard title="Le Budget Couvre-t-il les Besoins ?" icon={Wallet} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.budgetCouvreBesoinsData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={36} fill={theme.warning}>
+                    {stats.budgetCouvreBesoinsData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Accès à l'Eau Potable" icon={Droplet} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.accesEauData} layout="vertical" margin={{ left: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis type="number" tick={axisStyle} allowDecimals={false} />
+                  <YAxis type="category" dataKey="name" width={110} tick={axisStyle} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[0, 6, 6, 0]} barSize={22} fill={theme.primary}>
+                    {stats.accesEauData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Pratiques d'Économie d'Eau" icon={Droplet} badge={`n=${stats.n}`} className="md:col-span-2">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={stats.pratiquesEauData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.secondary}>
+                    {stats.pratiquesEauData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <p className="text-[11px] text-text-secondary mt-2">Choix multiple : la somme peut dépasser n.</p>
             </ChartCard>
           </div>
         </section>
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          SECTION 5 — ENVIRONNEMENT & MODE DE VIE
+          SECTION 4 — ALIMENTATION
           ═══════════════════════════════════════════════════════ */}
-      {(activeTab === 'tous' || activeTab === 'environnement') && (
+      {(activeTab === 'tous' || activeTab === 'alimentation') && (
         <section className="mb-10">
-          <SectionHeader icon={Trash2} title="Environnement & Cadre de Vie" color="text-secondary" />
+          <SectionHeader icon={Utensils} title="Alimentation" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/* Bar: Waste */}
-            <ChartCard title="Quantité d'Ordures / Semaine" icon={Trash2} iconColor="text-secondary" badge={`n=${stats.n}`}>
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={stats.wasteData}>
+            <ChartCard title="Nombre de Repas par Jour" icon={Utensils} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.nombreRepasData} margin={{ top: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
-                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-15} textAnchor="end" height={50} />
+                  <XAxis dataKey="name" tick={axisStyle} />
                   <YAxis tick={axisStyle} allowDecimals={false} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.secondary} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.primary}>
+                    {stats.nombreRepasData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
 
-            {/* Area: mode de vie indicators */}
-            <ChartCard title="Indicateurs Qualité de Vie" icon={Volume2} iconColor="text-warning" badge={`n=${stats.n}`}>
+            <ChartCard title="Lieu des Repas Principaux" icon={Utensils} badge={`n=${stats.n}`}>
               <ResponsiveContainer width="100%" height={240}>
-                <AreaChart data={stats.modeDeVieData}>
+                <BarChart data={stats.lieuRepasData} layout="vertical" margin={{ left: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
-                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-15} textAnchor="end" height={50} />
-                  <YAxis tick={axisStyle} unit="%" />
+                  <XAxis type="number" tick={axisStyle} allowDecimals={false} />
+                  <YAxis type="category" dataKey="name" width={100} tick={axisStyle} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="pct" name="%" stroke={theme.warning} fill={theme.warning} fillOpacity={0.15} strokeWidth={2} />
-                </AreaChart>
+                  <Bar dataKey="value" name="Étudiants" radius={[0, 6, 6, 0]} barSize={24} fill={theme.secondary}>
+                    {stats.lieuRepasData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
               </ResponsiveContainer>
-              <p className="text-[11px] text-text-secondary mt-3">
-                Données déclaratives recueillies de manière anonyme dans l'enquête CampusPulse. Survoler un point pour voir l'effectif.
-              </p>
+            </ChartCard>
+
+            <ChartCard title="Source d'Approvisionnement" icon={Utensils} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.sourceApprovisionnementData} layout="vertical" margin={{ left: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis type="number" tick={axisStyle} allowDecimals={false} />
+                  <YAxis type="category" dataKey="name" width={110} tick={axisStyle} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[0, 6, 6, 0]} barSize={22} fill={theme.warning}>
+                    {stats.sourceApprovisionnementData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Énergie de Cuisson" icon={Zap} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.energieCuissonData} layout="vertical" margin={{ left: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis type="number" tick={axisStyle} allowDecimals={false} />
+                  <YAxis type="category" dataKey="name" width={100} tick={axisStyle} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[0, 6, 6, 0]} barSize={22} fill={theme.danger}>
+                    {stats.energieCuissonData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Fréquence des Collations" icon={Utensils} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.frequenceCollationData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.primary}>
+                    {stats.frequenceCollationData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Dépenses Alimentation Journalières" icon={Wallet} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.depenseAlimentationData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.secondary}>
+                    {stats.depenseAlimentationData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Consommation Viande/Poisson" icon={Utensils} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.consommationViandePoissonData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.warning}>
+                    <Cell fill={theme.warning} />
+                    <Cell fill={theme.textSecondary} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Fruits & Légumes Locaux" icon={Leaf} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.fruitsLegumesLocauxData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.secondary}>
+                    <Cell fill={theme.secondary} />
+                    <Cell fill={theme.textSecondary} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Plastique Usage Unique" icon={Trash2} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.plastiqueUsageUniqueData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.danger}>
+                    <Cell fill={theme.danger} />
+                    <Cell fill={theme.textSecondary} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Alimentation Équilibrée" icon={Utensils} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.alimentationEquilibreeData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.primary}>
+                    {stats.alimentationEquilibreeData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Gestion des Restes Alimentaires" icon={Utensils} badge={`n=${stats.n}`} className="md:col-span-2">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={stats.gestionRestesData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.secondary}>
+                    {stats.gestionRestesData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 5 — TECHNOLOGIE
+          ═══════════════════════════════════════════════════════ */}
+      {(activeTab === 'tous' || activeTab === 'technologie') && (
+        <section className="mb-10">
+          <SectionHeader icon={Laptop} title="Technologie" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ChartCard title="Équipements Numériques Possédés" icon={Laptop} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.equipementsNumeriquesData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.primary}>
+                    {stats.equipementsNumeriquesData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <p className="text-[11px] text-text-secondary mt-2">Choix multiple : la somme peut dépasser n.</p>
+            </ChartCard>
+
+            <ChartCard title="Durée d'Utilisation des Appareils" icon={Laptop} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.dureeUtilisationData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.secondary}>
+                    {stats.dureeUtilisationData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Recharges Multipiples par Nuit" icon={Zap} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.rechargeMultipleData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.warning}>
+                    <Cell fill={theme.warning} />
+                    <Cell fill={theme.textSecondary} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Réaction en Cas de Panne" icon={Laptop} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.reactionPanneData} layout="vertical" margin={{ left: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis type="number" tick={axisStyle} allowDecimals={false} />
+                  <YAxis type="category" dataKey="name" width={100} tick={axisStyle} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[0, 6, 6, 0]} barSize={22} fill={theme.danger}>
+                    {stats.reactionPanneData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Élimination des Équipements Électroniques" icon={Trash2} badge={`n=${stats.n}`} className="md:col-span-2">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={stats.eliminationEquipementsData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.primary}>
+                    {stats.eliminationEquipementsData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 6 — VÊTEMENTS
+          ═══════════════════════════════════════════════════════ */}
+      {(activeTab === 'tous' || activeTab === 'vetements') && (
+        <section className="mb-10">
+          <SectionHeader icon={Shirt} title="Vêtements" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ChartCard title="Nombre de Tenues par Semaine" icon={Shirt} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.nombreTenutesData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.primary}>
+                    {stats.nombreTenutesData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Fréquence de Renouvellement" icon={Shirt} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.frequenceRenouvellementData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.secondary}>
+                    {stats.frequenceRenouvellementData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Origine d'Achat des Vêtements" icon={Shirt} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.origineAchatData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.warning}>
+                    {stats.origineAchatData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Fibres Naturelles Locales" icon={Leaf} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.fibresNaturellesData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.secondary}>
+                    <Cell fill={theme.secondary} />
+                    <Cell fill={theme.textSecondary} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Méthode de Lavage" icon={Shirt} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.methodeLavageData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.primary}>
+                    {stats.methodeLavageData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Lessive Écologique" icon={Leaf} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.lessiveEcologiqueData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.secondary}>
+                    <Cell fill={theme.secondary} />
+                    <Cell fill={theme.textSecondary} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Séchage Extérieur" icon={Shirt} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.sechageExterieurData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.warning}>
+                    <Cell fill={theme.warning} />
+                    <Cell fill={theme.textSecondary} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Réparation de Vêtements" icon={Shirt} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.repareVetementsData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.primary}>
+                    <Cell fill={theme.primary} />
+                    <Cell fill={theme.textSecondary} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Devenir des Vêtements Usagés" icon={Shirt} badge={`n=${stats.n}`} className="md:col-span-2">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={stats.devenirVetementsData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.secondary}>
+                    {stats.devenirVetementsData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 7 — HYGIÈNE
+          ═══════════════════════════════════════════════════════ */}
+      {(activeTab === 'tous' || activeTab === 'hygiene') && (
+        <section className="mb-10">
+          <SectionHeader icon={FlaskConical} title="Hygiène" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ChartCard title="Produits Chimiques Utilisés" icon={FlaskConical} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.produitsChimiquesData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.primary}>
+                    {stats.produitsChimiquesData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <p className="text-[11px] text-text-secondary mt-2">Choix multiple : la somme peut dépasser n.</p>
+            </ChartCard>
+
+            <ChartCard title="Lecture des Étiquettes" icon={FlaskConical} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.litEtiquettesData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.secondary}>
+                    <Cell fill={theme.secondary} />
+                    <Cell fill={theme.textSecondary} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Connaissance Chimie Verte" icon={FlaskConical} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.connaitChimieVerteData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.warning}>
+                    <Cell fill={theme.warning} />
+                    <Cell fill={theme.textSecondary} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Procédés Locaux Durables" icon={FlaskConical} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.procedesDurablesData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.danger}>
+                    <Cell fill={theme.danger} />
+                    <Cell fill={theme.textSecondary} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Favorable aux Ateliers Écologiques" icon={FlaskConical} badge={`n=${stats.n}`} className="md:col-span-2">
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.favorableAteliersData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.primary}>
+                    <Cell fill={theme.primary} />
+                    <Cell fill={theme.textSecondary} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 8 — DÉCHETS
+          ═══════════════════════════════════════════════════════ */}
+      {(activeTab === 'tous' || activeTab === 'dechets') && (
+        <section className="mb-10">
+          <SectionHeader icon={Trash2} title="Déchets" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ChartCard title="Types de Déchets Produits" icon={Trash2} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.typesDechetsData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.primary}>
+                    {stats.typesDechetsData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <p className="text-[11px] text-text-secondary mt-2">Choix multiple : la somme peut dépasser n.</p>
+            </ChartCard>
+
+            <ChartCard title="Utilisation de Contenants Réutilisables" icon={Trash2} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.contenantsReutilisablesData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.secondary}>
+                    {stats.contenantsReutilisablesData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Pratique du Tri Sélectif" icon={Trash2} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.triSelectifData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.warning}>
+                    {stats.triSelectifData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Revente Bouteilles/Métaux" icon={Trash2} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.revendBouteillesData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.secondary}>
+                    <Cell fill={theme.secondary} />
+                    <Cell fill={theme.textSecondary} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Lieu d'Élimination des Déchets" icon={Trash2} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.lieuEliminationData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.danger}>
+                    {stats.lieuEliminationData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Connaissance Toxicité Combustion Plastiques" icon={Trash2} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.connaitToxiciteData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={40} fill={theme.warning}>
+                    <Cell fill={theme.warning} />
+                    <Cell fill={theme.textSecondary} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Poubelles Suffisantes sur le Campus" icon={Trash2} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.poubellesSuffisantesData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.primary}>
+                    {stats.poubellesSuffisantesData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Participation aux Actions Environnementales" icon={Trash2} badge={`n=${stats.n}`} className="md:col-span-2">
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.participationActionsData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.secondary}>
+                    {stats.participationActionsData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 9 — PERCEPTION CAMPUS
+          ═══════════════════════════════════════════════════════ */}
+      {(activeTab === 'tous' || activeTab === 'perception') && (
+        <section className="mb-10">
+          <SectionHeader icon={Lightbulb} title="Perception Campus" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ChartCard title="Perception de l'Urgence des Déchets" icon={Lightbulb} badge={`n=${stats.n}`}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={stats.perceptionUrgenceData} margin={{ top: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.textSecondary + '20'} />
+                  <XAxis dataKey="name" tick={axisStyle} interval={0} angle={-10} textAnchor="end" height={40} />
+                  <YAxis tick={axisStyle} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" name="Étudiants" radius={[6, 6, 0, 0]} barSize={32} fill={theme.primary}>
+                    {stats.perceptionUrgenceData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </ChartCard>
           </div>
         </section>
