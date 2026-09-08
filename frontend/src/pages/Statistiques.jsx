@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabaseClient'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { THEME, CHART_COLORS, LABELS } from '../lib/statistiquesConstants'
 import { DEMO_RESPONSES } from '../lib/demoData'
-import BarChartReusable from '../components/BarChartReusable'
+import SurveyChart from '../components/SurveyChart'
 import ChartCard from '../components/ChartCard'
 import KpiCard from '../components/KpiCard'
 import TabCarousel from '../components/TabCarousel'
@@ -264,6 +264,17 @@ function Statistiques() {
       }))
     }
 
+    const hygieneEngagementData = [
+      ['Lecture des étiquettes', litEtiquettesCounts],
+      ['Chimie verte', connaitChimieVerteCounts],
+      ['Procédés durables', procedesDurablesCounts],
+      ['Ateliers écologiques', favorableAteliersCounts]
+    ].map(([name, counts]) => ({
+      name,
+      value: Math.round(((counts.oui || 0) / n) * 100),
+      unit: '%'
+    }))
+
     return {
       n,
       // Informations générales
@@ -327,6 +338,7 @@ function Statistiques() {
       connaitChimieVerteData: buildBinaryChartData(connaitChimieVerteCounts, { oui: 'Oui', non: 'Non' }),
       procedesDurablesData: buildBinaryChartData(procedesDurablesCounts, { oui: 'Oui', non: 'Non' }),
       favorableAteliersData: buildBinaryChartData(favorableAteliersCounts, { oui: 'Oui', non: 'Non' }),
+      hygieneEngagementData,
 
       // Déchets
       typesDechetsData: buildChartData(typesDechetsCounts, LABELS.types_dechets_produits),
@@ -416,7 +428,7 @@ function Statistiques() {
           <SectionHeader icon={User} title="Informations Générales" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ChartCard title="Répartition par Genre" icon={User} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.genreData}
                 layout="vertical"
                 theme={theme}
@@ -428,7 +440,8 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Répartition par Tranche d'Âge" icon={User} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
+                variant="line"
                 data={stats.trancheAgeData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -438,7 +451,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Type de Logement" icon={Home} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.residenceData}
                 layout="vertical"
                 theme={theme}
@@ -450,7 +463,8 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Loyer Mensuel" icon={Wallet} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
+                variant="area"
                 data={stats.loyerData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -460,7 +474,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Sources de Financement" icon={Wallet} badge={`n=${stats.n}`} className="md:col-span-2">
-              <BarChartReusable
+              <SurveyChart
                 data={stats.financementData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -481,7 +495,7 @@ function Statistiques() {
           <SectionHeader icon={Car} title="Transport & Énergie" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ChartCard title="Mode de Transport Principal" icon={Car} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.transportPrincipalData}
                 layout="vertical"
                 theme={theme}
@@ -493,8 +507,9 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Durée du Trajet" icon={MapPin} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.dureeTrajetData}
+                variant="line"
                 theme={theme}
                 axisStyle={axisStyle}
                 barSize={28}
@@ -503,8 +518,9 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Dépenses Journalières de Transport" icon={Wallet} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.depenseTransportData}
+                variant="area"
                 theme={theme}
                 axisStyle={axisStyle}
                 barSize={30}
@@ -513,7 +529,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Difficultés de Transport" icon={Car} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.difficultesTransportData}
                 layout="vertical"
                 theme={theme}
@@ -526,7 +542,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Utilisation LED" icon={Lightbulb} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.ledUtiliseData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -536,7 +552,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Coupures Fréquentes" icon={Zap} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.coupuresFrequentesData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -556,8 +572,9 @@ function Statistiques() {
           <SectionHeader icon={Wallet} title="Budget & Eau" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ChartCard title="Budget Mensuel Total" icon={Wallet} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.budgetData}
+                variant="area"
                 theme={theme}
                 axisStyle={axisStyle}
                 barSize={28}
@@ -566,7 +583,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Postes de Dépenses Principaux" icon={Wallet} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.postesDepensesData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -577,7 +594,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Le Budget Couvre-t-il les Besoins ?" icon={Wallet} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.budgetCouvreBesoinsData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -587,7 +604,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Accès à l'Eau Potable" icon={Droplet} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.accesEauData}
                 layout="vertical"
                 theme={theme}
@@ -599,7 +616,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Pratiques d'Économie d'Eau" icon={Droplet} badge={`n=${stats.n}`} className="md:col-span-2">
-              <BarChartReusable
+              <SurveyChart
                 data={stats.pratiquesEauData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -620,8 +637,9 @@ function Statistiques() {
           <SectionHeader icon={Utensils} title="Alimentation" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ChartCard title="Nombre de Repas par Jour" icon={Utensils} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.nombreRepasData}
+                variant="line"
                 theme={theme}
                 axisStyle={axisStyle}
                 barSize={40}
@@ -630,7 +648,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Lieu des Repas Principaux" icon={Utensils} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.lieuRepasData}
                 layout="vertical"
                 theme={theme}
@@ -642,7 +660,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Source d'Approvisionnement" icon={Utensils} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.sourceApprovisionnementData}
                 layout="vertical"
                 theme={theme}
@@ -654,7 +672,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Énergie de Cuisson" icon={Zap} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.energieCuissonData}
                 layout="vertical"
                 theme={theme}
@@ -666,8 +684,9 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Fréquence des Collations" icon={Utensils} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.frequenceCollationData}
+                variant="area"
                 theme={theme}
                 axisStyle={axisStyle}
                 barSize={32}
@@ -676,8 +695,9 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Dépenses Alimentation Journalières" icon={Wallet} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.depenseAlimentationData}
+                variant="area"
                 theme={theme}
                 axisStyle={axisStyle}
                 barSize={32}
@@ -686,7 +706,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Consommation Viande/Poisson" icon={Utensils} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.consommationViandePoissonData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -696,7 +716,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Fruits & Légumes Locaux" icon={Leaf} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.fruitsLegumesLocauxData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -706,7 +726,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Plastique Usage Unique" icon={Trash2} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.plastiqueUsageUniqueData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -716,7 +736,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Alimentation Équilibrée" icon={Utensils} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.alimentationEquilibreeData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -726,7 +746,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Gestion des Restes Alimentaires" icon={Utensils} badge={`n=${stats.n}`} className="md:col-span-2">
-              <BarChartReusable
+              <SurveyChart
                 data={stats.gestionRestesData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -746,7 +766,7 @@ function Statistiques() {
           <SectionHeader icon={Laptop} title="Technologie" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ChartCard title="Équipements Numériques Possédés" icon={Laptop} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.equipementsNumeriquesData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -757,8 +777,9 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Durée d'Utilisation des Appareils" icon={Laptop} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.dureeUtilisationData}
+                variant="line"
                 theme={theme}
                 axisStyle={axisStyle}
                 barSize={32}
@@ -767,7 +788,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Recharges Multiples par Nuit" icon={Zap} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.rechargeMultipleData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -777,7 +798,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Réaction en Cas de Panne" icon={Laptop} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.reactionPanneData}
                 layout="vertical"
                 theme={theme}
@@ -789,7 +810,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Élimination des Équipements Électroniques" icon={Trash2} badge={`n=${stats.n}`} className="md:col-span-2">
-              <BarChartReusable
+              <SurveyChart
                 data={stats.eliminationEquipementsData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -809,8 +830,9 @@ function Statistiques() {
           <SectionHeader icon={Shirt} title="Vêtements" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ChartCard title="Nombre de Tenues par Semaine" icon={Shirt} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.nombreTenuesData}
+                variant="area"
                 theme={theme}
                 axisStyle={axisStyle}
                 barSize={40}
@@ -819,8 +841,9 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Fréquence de Renouvellement" icon={Shirt} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.frequenceRenouvellementData}
+                variant="area"
                 theme={theme}
                 axisStyle={axisStyle}
                 barSize={32}
@@ -829,7 +852,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Origine d'Achat des Vêtements" icon={Shirt} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.origineAchatData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -839,7 +862,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Fibres Naturelles Locales" icon={Leaf} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.fibresNaturellesData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -849,7 +872,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Méthode de Lavage" icon={Shirt} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.methodeLavageData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -859,7 +882,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Lessive Écologique" icon={Leaf} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.lessiveEcologiqueData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -869,7 +892,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Séchage Extérieur" icon={Shirt} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.sechageExterieurData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -879,7 +902,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Réparation de Vêtements" icon={Shirt} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.repareVetementsData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -889,7 +912,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Devenir des Vêtements Usagés" icon={Shirt} badge={`n=${stats.n}`} className="md:col-span-2">
-              <BarChartReusable
+              <SurveyChart
                 data={stats.devenirVetementsData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -909,7 +932,7 @@ function Statistiques() {
           <SectionHeader icon={FlaskConical} title="Hygiène" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ChartCard title="Produits Chimiques Utilisés" icon={FlaskConical} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.produitsChimiquesData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -920,7 +943,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Lecture des Étiquettes" icon={FlaskConical} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.litEtiquettesData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -930,7 +953,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Connaissance Chimie Verte" icon={FlaskConical} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.connaitChimieVerteData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -940,7 +963,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Procédés Locaux Durables" icon={FlaskConical} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.procedesDurablesData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -950,13 +973,24 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Favorable aux Ateliers Écologiques" icon={FlaskConical} badge={`n=${stats.n}`} className="md:col-span-2">
-              <BarChartReusable
+              <SurveyChart
                 data={stats.favorableAteliersData}
                 theme={theme}
                 axisStyle={axisStyle}
                 barSize={40}
                 colors={[THEME.primary, THEME.textSecondary]}
               />
+            </ChartCard>
+
+            <ChartCard title="Profil d'Engagement Écologique" icon={Leaf} badge="part de réponses positives" className="md:col-span-2">
+              <SurveyChart
+                data={stats.hygieneEngagementData}
+                variant="radar"
+                theme={theme}
+                axisStyle={axisStyle}
+                colors={[THEME.secondary]}
+              />
+              <p className="text-[11px] text-text-secondary mt-2">Chaque axe représente le pourcentage de réponses positives à une pratique comparable.</p>
             </ChartCard>
           </div>
         </section>
@@ -970,7 +1004,7 @@ function Statistiques() {
           <SectionHeader icon={Trash2} title="Déchets" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ChartCard title="Types de Déchets Produits" icon={Trash2} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.typesDechetsData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -981,7 +1015,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Utilisation de Contenants Réutilisables" icon={Trash2} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.contenantsReutilisablesData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -991,7 +1025,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Pratique du Tri Sélectif" icon={Trash2} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.triSelectifData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -1001,7 +1035,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Revente Bouteilles/Métaux" icon={Trash2} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.revendBouteillesData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -1011,7 +1045,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Lieu d'Élimination des Déchets" icon={Trash2} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.lieuEliminationData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -1021,7 +1055,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Connaissance Toxicité Combustion Plastiques" icon={Trash2} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.connaitToxiciteData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -1031,7 +1065,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Poubelles Suffisantes sur le Campus" icon={Trash2} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.poubellesSuffisantesData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -1041,7 +1075,7 @@ function Statistiques() {
             </ChartCard>
 
             <ChartCard title="Participation aux Actions Environnementales" icon={Trash2} badge={`n=${stats.n}`} className="md:col-span-2">
-              <BarChartReusable
+              <SurveyChart
                 data={stats.participationActionsData}
                 theme={theme}
                 axisStyle={axisStyle}
@@ -1061,8 +1095,9 @@ function Statistiques() {
           <SectionHeader icon={Lightbulb} title="Perception Campus" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ChartCard title="Perception de l'Urgence des Déchets" icon={Lightbulb} badge={`n=${stats.n}`}>
-              <BarChartReusable
+              <SurveyChart
                 data={stats.perceptionUrgenceData}
+                variant="area"
                 theme={theme}
                 axisStyle={axisStyle}
                 barSize={32}
