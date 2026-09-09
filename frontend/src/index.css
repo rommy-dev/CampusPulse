@@ -53,11 +53,35 @@
   --color-warning: #FBBF24;
 }
 
+html {
+  scroll-behavior: smooth;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
 html, body {
   background-color: var(--color-bg);
   color: var(--color-text-primary);
   transition: background-color var(--duration-theme) var(--ease-in-out), color var(--duration-theme) var(--ease-in-out);
   min-height: 100%;
+}
+
+/* Custom subtle noise background texture */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+.dark .bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Subtle border animation on focus/hover */
+.border-subtle {
+  border-color: rgba(148, 163, 184, 0.15);
 }
 
 /* Safe area support for mobile devices */

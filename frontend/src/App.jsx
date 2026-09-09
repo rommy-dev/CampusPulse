@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from './lib/supabaseClient'
+import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import ForgotPassword from './pages/ForgotPassword'
@@ -34,12 +35,12 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={
+      <Route path="/" element={<Landing />} />
+      <Route element={
         <ProtectedRoute>
           <Layout />
         </ProtectedRoute>
       }>
-        <Route index element={<Navigate to="/formulaire" replace />} />
         <Route path="dashboard" element={
           <AdminRoute>
             <Dashboard />
@@ -63,6 +64,7 @@ function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
