@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { usePublicKpis } from '../hooks/usePublicKpis'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import espaBg from '../assets/espa_bg.jpg'
@@ -34,8 +35,9 @@ function Landing() {
   const [activePilier, setActivePilier] = useState(0)
 
   // Indicateurs publics agrégés : aucune réponse individuelle n'est exposée.
-  const [kpis, setKpis] = useState({ n: 0, transportPct: 0, ledPct: 0, triPct: 0 })
-  const [loadingStats, setLoadingStats] = useState(true)
+  // Récupérés via un hook avec cache mémoire + localStorage (TTL 10 min, stale-while-revalidate)
+  // pour éviter un appel RPC Supabase à chaque visite de la landing page.
+  const { kpis, loadingStats } = usePublicKpis()
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -55,28 +57,7 @@ function Landing() {
       }
     }
 
-    const fetchPublicKpis = async () => {
-      try {
-        setLoadingStats(true)
-        const { data, error } = await supabase.rpc('get_public_landing_kpis')
-        if (error) throw error
-        const metrics = data?.[0]
-        setKpis({
-          n: Number(metrics?.response_count || 0),
-          transportPct: Number(metrics?.transport_pct || 0),
-          ledPct: Number(metrics?.led_pct || 0),
-          triPct: Number(metrics?.tri_pct || 0)
-        })
-      } catch (err) {
-        console.error('Erreur lors de la récupération des KPI publics:', err)
-        setKpis({ n: 0, transportPct: 0, ledPct: 0, triPct: 0 })
-      } finally {
-        setLoadingStats(false)
-      }
-    }
-
     getInitialSession()
-    fetchPublicKpis()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session)
