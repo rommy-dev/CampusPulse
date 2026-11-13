@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabaseClient'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { THEME, CHART_COLORS, LABELS } from '../lib/statistiquesConstants'
 import { DEMO_RESPONSES } from '../lib/demoData'
+import { aggregateAnswers } from '../lib/surveyStats'
 import SurveyChart from '../components/SurveyChart'
 import ChartCard from '../components/ChartCard'
 import TabCarousel from '../components/TabCarousel'
@@ -41,208 +42,109 @@ function useThemeColors() {
 
 // ── Main component ─────────────────────────────────────────────────────
 function Statistiques() {
-  const [responses, setResponses] = useState([])
+  const [survey, setSurvey] = useState({ n: 0, counts: {} })
   const [loading, setLoading] = useState(true)
   const [isDemoData, setIsDemoData] = useState(false)
   const [activeTab, setActiveTab] = useState('generales')
   const theme = useThemeColors()
 
   useEffect(() => {
-    fetchResponses()
-  }, [])
-
-  const fetchResponses = async () => {
-    try {
-      setLoading(true)
-      const { data, error } = await supabase.from('responses').select('*')
-      if (error) throw error
-      if (data && data.length > 0) {
-        setResponses(data)
-        setIsDemoData(false)
-      } else {
-        setResponses(DEMO_RESPONSES)
+    const fetchStats = async () => {
+      try {
+        // Seuls des comptages par question sont renvoyés, jamais les réponses individuelles.
+        const { data, error } = await supabase.rpc('get_survey_stats')
+        if (error) throw error
+        if (data && data.n > 0) {
+          setSurvey(data)
+          setIsDemoData(false)
+        } else {
+          setSurvey(aggregateAnswers(DEMO_RESPONSES))
+          setIsDemoData(true)
+        }
+      } catch {
+        setSurvey(aggregateAnswers(DEMO_RESPONSES))
         setIsDemoData(true)
+      } finally {
+        setLoading(false)
       }
-    } catch {
-      setResponses(DEMO_RESPONSES)
-      setIsDemoData(true)
-    } finally {
-      setLoading(false)
     }
-  }
+    fetchStats()
+  }, [])
 
   // ── Heavy aggregation ────────────────────────────────────────────────
   const stats = useMemo(() => {
-    const n = responses.length || 1
+    const n = survey.n || 1
 
-    // Initialize all counters
-    const genreCounts = {}
-    const trancheAgeCounts = {}
-    const residenceCounts = {}
-    const loyerCounts = {}
-    const financementCounts = {}
-    const transportPrincipalCounts = {}
-    const combineTransportsCounts = { oui: 0, non: 0 }
-    const dureeTrajetCounts = {}
-    const depenseTransportCounts = {}
-    const difficultesTransportCounts = {}
-    const ledUtiliseCounts = { oui: 0, non: 0 }
-    const eteintLumieresCounts = { oui: 0, non: 0 }
-    const coupuresFrequentesCounts = { oui: 0, non: 0 }
-    const budgetCounts = {}
-    const postesDepensesCounts = {}
-    const budgetCouvreBesoinsCounts = {}
-    const accesEauCounts = {}
-    const pratiquesEauCounts = {}
-    const nombreRepasCounts = {}
-    const lieuRepasCounts = {}
-    const sourceApprovisionnementCounts = {}
-    const energieCuissonCounts = {}
-    const frequenceCollationCounts = {}
-    const depenseAlimentationCounts = {}
-    const consommationViandePoissonCounts = { oui: 0, non: 0 }
-    const fruitsLegumesLocauxCounts = { oui: 0, non: 0 }
-    const plastiqueUsageUniqueCounts = { oui: 0, non: 0 }
-    const alimentationEquilibreeCounts = {}
-    const gestionRestesCounts = {}
-    const equipementsNumeriquesCounts = {}
-    const dureeUtilisationCounts = {}
-    const rechargeMultipleCounts = { oui: 0, non: 0 }
-    const reactionPanneCounts = {}
-    const eliminationEquipementsCounts = {}
-    const nombreTenuesCounts = {}
-    const frequenceRenouvellementCounts = {}
-    const origineAchatCounts = {}
-    const fibresNaturellesCounts = { oui: 0, non: 0 }
-    const methodeLavageCounts = {}
-    const lessiveEcologiqueCounts = { oui: 0, non: 0 }
-    const sechageExterieurCounts = { oui: 0, non: 0 }
-    const repareVetementsCounts = { oui: 0, non: 0 }
-    const devenirVetementsCounts = {}
-    const produitsChimiquesCounts = {}
-    const litEtiquettesCounts = { oui: 0, non: 0 }
-    const connaitChimieVerteCounts = { oui: 0, non: 0 }
-    const procedesDurablesCounts = { oui: 0, non: 0 }
-    const favorableAteliersCounts = { oui: 0, non: 0 }
-    const typesDechetsCounts = {}
-    const contenantsReutilisablesCounts = {}
-    const triSelectifCounts = {}
-    const revendBouteillesCounts = { oui: 0, non: 0 }
-    const lieuEliminationCounts = {}
-    const connaitToxiciteCounts = { oui: 0, non: 0 }
-    const poubellesSuffisantesCounts = {}
-    const participationActionsCounts = {}
-    const perceptionUrgenceCounts = {}
+    const counts = survey.counts || {}
+    const countsFor = (key, base = {}) => ({ ...base, ...(counts[key] || {}) })
+    // Booléens : renvoyés "true" / "false" par le serveur, affichés Oui / Non
+    const yesNo = (key) => {
+      const c = counts[key] || {}
+      return { oui: (c.true || 0) + (c.oui || 0), non: (c.false || 0) + (c.non || 0) }
+    }
 
-    responses.forEach((r) => {
-      const a = r.answers || {}
-
-      // Informations générales
-      if (a.genre) genreCounts[a.genre] = (genreCounts[a.genre] || 0) + 1
-      if (a.tranche_age) trancheAgeCounts[a.tranche_age] = (trancheAgeCounts[a.tranche_age] || 0) + 1
-      if (a.residence_principale) residenceCounts[a.residence_principale] = (residenceCounts[a.residence_principale] || 0) + 1
-      if (a.loyer_mensuel) loyerCounts[a.loyer_mensuel] = (loyerCounts[a.loyer_mensuel] || 0) + 1
-      if (Array.isArray(a.source_financement)) {
-        a.source_financement.forEach(s => {
-          financementCounts[s] = (financementCounts[s] || 0) + 1
-        })
-      }
-
-      // Transport
-      if (a.transport_principal) transportPrincipalCounts[a.transport_principal] = (transportPrincipalCounts[a.transport_principal] || 0) + 1
-      if (a.combine_transports) combineTransportsCounts[a.combine_transports] = (combineTransportsCounts[a.combine_transports] || 0) + 1
-      if (a.duree_trajet) dureeTrajetCounts[a.duree_trajet] = (dureeTrajetCounts[a.duree_trajet] || 0) + 1
-      if (a.depense_transport_jour) depenseTransportCounts[a.depense_transport_jour] = (depenseTransportCounts[a.depense_transport_jour] || 0) + 1
-      if (Array.isArray(a.difficultes_transport)) {
-        a.difficultes_transport.forEach(d => {
-          difficultesTransportCounts[d] = (difficultesTransportCounts[d] || 0) + 1
-        })
-      }
-      if (a.led_utilise) ledUtiliseCounts[a.led_utilise] = (ledUtiliseCounts[a.led_utilise] || 0) + 1
-      if (a.eteint_lumieres_debranche) eteintLumieresCounts[a.eteint_lumieres_debranche] = (eteintLumieresCounts[a.eteint_lumieres_debranche] || 0) + 1
-      if (a.coupures_frequentes) coupuresFrequentesCounts[a.coupures_frequentes] = (coupuresFrequentesCounts[a.coupures_frequentes] || 0) + 1
-
-      // Budget & Eau
-      if (a.budget_mensuel_total) budgetCounts[a.budget_mensuel_total] = (budgetCounts[a.budget_mensuel_total] || 0) + 1
-      if (Array.isArray(a.postes_depenses)) {
-        a.postes_depenses.forEach(p => {
-          postesDepensesCounts[p] = (postesDepensesCounts[p] || 0) + 1
-        })
-      }
-      if (a.budget_couvre_besoins) budgetCouvreBesoinsCounts[a.budget_couvre_besoins] = (budgetCouvreBesoinsCounts[a.budget_couvre_besoins] || 0) + 1
-      if (a.acces_eau_potable) accesEauCounts[a.acces_eau_potable] = (accesEauCounts[a.acces_eau_potable] || 0) + 1
-      if (Array.isArray(a.pratiques_economie_eau)) {
-        a.pratiques_economie_eau.forEach(p => {
-          pratiquesEauCounts[p] = (pratiquesEauCounts[p] || 0) + 1
-        })
-      }
-
-      // Alimentation
-      if (a.nombre_repas_jour) nombreRepasCounts[a.nombre_repas_jour] = (nombreRepasCounts[a.nombre_repas_jour] || 0) + 1
-      if (a.lieu_repas_principaux) lieuRepasCounts[a.lieu_repas_principaux] = (lieuRepasCounts[a.lieu_repas_principaux] || 0) + 1
-      if (a.source_approvisionnement_alimentaire) sourceApprovisionnementCounts[a.source_approvisionnement_alimentaire] = (sourceApprovisionnementCounts[a.source_approvisionnement_alimentaire] || 0) + 1
-      if (a.energie_cuisson) energieCuissonCounts[a.energie_cuisson] = (energieCuissonCounts[a.energie_cuisson] || 0) + 1
-      if (a.frequence_collation) frequenceCollationCounts[a.frequence_collation] = (frequenceCollationCounts[a.frequence_collation] || 0) + 1
-      if (a.depense_alimentation_jour) depenseAlimentationCounts[a.depense_alimentation_jour] = (depenseAlimentationCounts[a.depense_alimentation_jour] || 0) + 1
-      if (a.consommation_viande_poisson) consommationViandePoissonCounts[a.consommation_viande_poisson] = (consommationViandePoissonCounts[a.consommation_viande_poisson] || 0) + 1
-      if (a.fruits_legumes_locaux_saison) fruitsLegumesLocauxCounts[a.fruits_legumes_locaux_saison] = (fruitsLegumesLocauxCounts[a.fruits_legumes_locaux_saison] || 0) + 1
-      if (a.produits_plastique_usage_unique) plastiqueUsageUniqueCounts[a.produits_plastique_usage_unique] = (plastiqueUsageUniqueCounts[a.produits_plastique_usage_unique] || 0) + 1
-      if (a.alimentation_equilibree) alimentationEquilibreeCounts[a.alimentation_equilibree] = (alimentationEquilibreeCounts[a.alimentation_equilibree] || 0) + 1
-      if (a.gestion_restes_alimentaires) gestionRestesCounts[a.gestion_restes_alimentaires] = (gestionRestesCounts[a.gestion_restes_alimentaires] || 0) + 1
-
-      // Technologie
-      if (Array.isArray(a.equipements_numeriques)) {
-        a.equipements_numeriques.forEach(e => {
-          equipementsNumeriquesCounts[e] = (equipementsNumeriquesCounts[e] || 0) + 1
-        })
-      }
-      if (a.duree_utilisation_appareil) dureeUtilisationCounts[a.duree_utilisation_appareil] = (dureeUtilisationCounts[a.duree_utilisation_appareil] || 0) + 1
-      if (a.recharge_appareils_plusieurs_fois_nuit) rechargeMultipleCounts[a.recharge_appareils_plusieurs_fois_nuit] = (rechargeMultipleCounts[a.recharge_appareils_plusieurs_fois_nuit] || 0) + 1
-      if (a.reaction_panne_appareil) reactionPanneCounts[a.reaction_panne_appareil] = (reactionPanneCounts[a.reaction_panne_appareil] || 0) + 1
-      if (a.elimination_equipements_electroniques) eliminationEquipementsCounts[a.elimination_equipements_electroniques] = (eliminationEquipementsCounts[a.elimination_equipements_electroniques] || 0) + 1
-
-      // Vêtements
-      const nombreTenues = a.nombre_tenues_semaine ?? a.nombre_tenutes_semaine
-      if (nombreTenues) {
-        nombreTenuesCounts[nombreTenues] = (nombreTenuesCounts[nombreTenues] || 0) + 1
-      }
-      if (a.frequence_renouvellement_vetements) frequenceRenouvellementCounts[a.frequence_renouvellement_vetements] = (frequenceRenouvellementCounts[a.frequence_renouvellement_vetements] || 0) + 1
-      if (a.origine_achat_vetements) origineAchatCounts[a.origine_achat_vetements] = (origineAchatCounts[a.origine_achat_vetements] || 0) + 1
-      if (a.possede_fibres_naturelles_locales !== null) fibresNaturellesCounts[a.possede_fibres_naturelles_locales ? 'oui' : 'non'] = (fibresNaturellesCounts[a.possede_fibres_naturelles_locales ? 'oui' : 'non'] || 0) + 1
-      if (a.methode_lavage_vetements) methodeLavageCounts[a.methode_lavage_vetements] = (methodeLavageCounts[a.methode_lavage_vetements] || 0) + 1
-      if (a.lessive_ecologique_utilisee !== null) lessiveEcologiqueCounts[a.lessive_ecologique_utilisee ? 'oui' : 'non'] = (lessiveEcologiqueCounts[a.lessive_ecologique_utilisee ? 'oui' : 'non'] || 0) + 1
-      if (a.sechage_exterieur !== null) sechageExterieurCounts[a.sechage_exterieur ? 'oui' : 'non'] = (sechageExterieurCounts[a.sechage_exterieur ? 'oui' : 'non'] || 0) + 1
-      if (a.repare_vetements !== null) repareVetementsCounts[a.repare_vetements ? 'oui' : 'non'] = (repareVetementsCounts[a.repare_vetements ? 'oui' : 'non'] || 0) + 1
-      if (a.devenir_vetements_usages) devenirVetementsCounts[a.devenir_vetements_usages] = (devenirVetementsCounts[a.devenir_vetements_usages] || 0) + 1
-
-      // Hygiène
-      if (Array.isArray(a.produits_chimiques_utilises)) {
-        a.produits_chimiques_utilises.forEach(p => {
-          produitsChimiquesCounts[p] = (produitsChimiquesCounts[p] || 0) + 1
-        })
-      }
-      if (a.lit_etiquettes_produits !== null) litEtiquettesCounts[a.lit_etiquettes_produits ? 'oui' : 'non'] = (litEtiquettesCounts[a.lit_etiquettes_produits ? 'oui' : 'non'] || 0) + 1
-      if (a.connait_principes_chimie_verte !== null) connaitChimieVerteCounts[a.connait_principes_chimie_verte ? 'oui' : 'non'] = (connaitChimieVerteCounts[a.connait_principes_chimie_verte ? 'oui' : 'non'] || 0) + 1
-      if (a.procedes_locaux_durables !== null) procedesDurablesCounts[a.procedes_locaux_durables ? 'oui' : 'non'] = (procedesDurablesCounts[a.procedes_locaux_durables ? 'oui' : 'non'] || 0) + 1
-      if (a.favorable_ateliers_ecologiques !== null) favorableAteliersCounts[a.favorable_ateliers_ecologiques ? 'oui' : 'non'] = (favorableAteliersCounts[a.favorable_ateliers_ecologiques ? 'oui' : 'non'] || 0) + 1
-
-      // Déchets
-      if (Array.isArray(a.types_dechets_produits)) {
-        a.types_dechets_produits.forEach(t => {
-          typesDechetsCounts[t] = (typesDechetsCounts[t] || 0) + 1
-        })
-      }
-      if (a.utilise_contenants_reutilisables) contenantsReutilisablesCounts[a.utilise_contenants_reutilisables] = (contenantsReutilisablesCounts[a.utilise_contenants_reutilisables] || 0) + 1
-      if (a.pratique_tri_selectif) triSelectifCounts[a.pratique_tri_selectif] = (triSelectifCounts[a.pratique_tri_selectif] || 0) + 1
-      if (a.revend_bouteilles_metaux_collecteurs !== null) revendBouteillesCounts[a.revend_bouteilles_metaux_collecteurs ? 'oui' : 'non'] = (revendBouteillesCounts[a.revend_bouteilles_metaux_collecteurs ? 'oui' : 'non'] || 0) + 1
-      if (a.lieu_elimination_dechets) lieuEliminationCounts[a.lieu_elimination_dechets] = (lieuEliminationCounts[a.lieu_elimination_dechets] || 0) + 1
-      if (a.connait_toxicite_combustion_plastiques !== null) connaitToxiciteCounts[a.connait_toxicite_combustion_plastiques ? 'oui' : 'non'] = (connaitToxiciteCounts[a.connait_toxicite_combustion_plastiques ? 'oui' : 'non'] || 0) + 1
-      if (a.poubelles_suffisantes_campus) poubellesSuffisantesCounts[a.poubelles_suffisantes_campus] = (poubellesSuffisantesCounts[a.poubelles_suffisantes_campus] || 0) + 1
-      if (a.pret_a_participer_actions_environnementales) participationActionsCounts[a.pret_a_participer_actions_environnementales] = (participationActionsCounts[a.pret_a_participer_actions_environnementales] || 0) + 1
-
-      // Perception
-      if (a.perception_urgence_dechets) perceptionUrgenceCounts[a.perception_urgence_dechets] = (perceptionUrgenceCounts[a.perception_urgence_dechets] || 0) + 1
+    // Comptages par question, calculés côté serveur (get_survey_stats)
+    const genreCounts = countsFor('genre')
+    const trancheAgeCounts = countsFor('tranche_age')
+    const residenceCounts = countsFor('residence_principale')
+    const loyerCounts = countsFor('loyer_mensuel')
+    const financementCounts = countsFor('source_financement')
+    const transportPrincipalCounts = countsFor('transport_principal')
+    const combineTransportsCounts = countsFor('combine_transports', { oui: 0, non: 0 })
+    const dureeTrajetCounts = countsFor('duree_trajet')
+    const depenseTransportCounts = countsFor('depense_transport_jour')
+    const difficultesTransportCounts = countsFor('difficultes_transport')
+    const ledUtiliseCounts = countsFor('led_utilise', { oui: 0, non: 0 })
+    const eteintLumieresCounts = countsFor('eteint_lumieres_debranche', { oui: 0, non: 0 })
+    const coupuresFrequentesCounts = countsFor('coupures_frequentes', { oui: 0, non: 0 })
+    const budgetCounts = countsFor('budget_mensuel_total')
+    const postesDepensesCounts = countsFor('postes_depenses')
+    const budgetCouvreBesoinsCounts = countsFor('budget_couvre_besoins')
+    const accesEauCounts = countsFor('acces_eau_potable')
+    const pratiquesEauCounts = countsFor('pratiques_economie_eau')
+    const nombreRepasCounts = countsFor('nombre_repas_jour')
+    const lieuRepasCounts = countsFor('lieu_repas_principaux')
+    const sourceApprovisionnementCounts = countsFor('source_approvisionnement_alimentaire')
+    const energieCuissonCounts = countsFor('energie_cuisson')
+    const frequenceCollationCounts = countsFor('frequence_collation')
+    const depenseAlimentationCounts = countsFor('depense_alimentation_jour')
+    const consommationViandePoissonCounts = countsFor('consommation_viande_poisson', { oui: 0, non: 0 })
+    const fruitsLegumesLocauxCounts = countsFor('fruits_legumes_locaux_saison', { oui: 0, non: 0 })
+    const plastiqueUsageUniqueCounts = countsFor('produits_plastique_usage_unique', { oui: 0, non: 0 })
+    const alimentationEquilibreeCounts = countsFor('alimentation_equilibree')
+    const gestionRestesCounts = countsFor('gestion_restes_alimentaires')
+    const equipementsNumeriquesCounts = countsFor('equipements_numeriques')
+    const dureeUtilisationCounts = countsFor('duree_utilisation_appareil')
+    const rechargeMultipleCounts = countsFor('recharge_appareils_plusieurs_fois_nuit', { oui: 0, non: 0 })
+    const reactionPanneCounts = countsFor('reaction_panne_appareil')
+    const eliminationEquipementsCounts = countsFor('elimination_equipements_electroniques')
+    // Ancienne faute de frappe dans la clé : les deux variantes sont additionnées
+    const nombreTenuesCounts = countsFor('nombre_tenues_semaine')
+    Object.entries(counts.nombre_tenutes_semaine || {}).forEach(([k, v]) => {
+      nombreTenuesCounts[k] = (nombreTenuesCounts[k] || 0) + v
     })
+    const frequenceRenouvellementCounts = countsFor('frequence_renouvellement_vetements')
+    const origineAchatCounts = countsFor('origine_achat_vetements')
+    const fibresNaturellesCounts = yesNo('possede_fibres_naturelles_locales')
+    const methodeLavageCounts = countsFor('methode_lavage_vetements')
+    const lessiveEcologiqueCounts = yesNo('lessive_ecologique_utilisee')
+    const sechageExterieurCounts = yesNo('sechage_exterieur')
+    const repareVetementsCounts = yesNo('repare_vetements')
+    const devenirVetementsCounts = countsFor('devenir_vetements_usages')
+    const produitsChimiquesCounts = countsFor('produits_chimiques_utilises')
+    const litEtiquettesCounts = yesNo('lit_etiquettes_produits')
+    const connaitChimieVerteCounts = yesNo('connait_principes_chimie_verte')
+    const procedesDurablesCounts = yesNo('procedes_locaux_durables')
+    const favorableAteliersCounts = yesNo('favorable_ateliers_ecologiques')
+    const typesDechetsCounts = countsFor('types_dechets_produits')
+    const contenantsReutilisablesCounts = countsFor('utilise_contenants_reutilisables')
+    const triSelectifCounts = countsFor('pratique_tri_selectif')
+    const revendBouteillesCounts = yesNo('revend_bouteilles_metaux_collecteurs')
+    const lieuEliminationCounts = countsFor('lieu_elimination_dechets')
+    const connaitToxiciteCounts = yesNo('connait_toxicite_combustion_plastiques')
+    const poubellesSuffisantesCounts = countsFor('poubelles_suffisantes_campus')
+    const participationActionsCounts = countsFor('pret_a_participer_actions_environnementales')
+    const perceptionUrgenceCounts = countsFor('perception_urgence_dechets')
 
     // Helper function to build chart data
     const buildChartData = (counts, labelMap) => {
@@ -352,7 +254,7 @@ function Statistiques() {
       // Perception
       perceptionUrgenceData: buildChartData(perceptionUrgenceCounts, LABELS.perception_urgence_dechets)
     }
-  }, [responses])
+  }, [survey])
 
   if (loading) {
     return (
